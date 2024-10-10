@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CentOS Terminal</title>
+<style>
+     #pl {
+        display: flex; /* 启用Flexbox布局 */
+     }
+    #terminal {
+        font-family: monospace;
+        font-size: 1em;
+        /* width: 600px; */
+        width: 50%;
+        height: 600px;
+        border: 1px solid #000;
+        overflow: scroll;
+        padding: 5px;
+        margin: 10px;
+        background: #000;
+        color: #fff;
+    }
+    #terminal2 {
+        font-family: monospace;
+        font-size: 1em;
+        /* width: 600px; */
+        width: 50%;
+        height: 600px;
+        border: 1px solid #000;
+        overflow: scroll;
+        padding: 5px;
+        margin: 10px;
+        background: #000;
+        color: #fff;
+    }
+    #terminal3 {
+        font-family: monospace;
+        font-size: 1em;
+        /* width: 600px; */
+        width: 50%;
+        height: 600px;
+        border: 1px solid #000;
+        overflow: scroll;
+        padding: 5px;
+        margin: 10px;
+        background: #000;
+        color: #fff;
+    }
+    
+</style>
+<script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/1.9.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function(){
+      $("#btn1").click(function(){
+        alert("Text: " + $("#test").text());
+      });
+      $("#btn2").click(function(){
+        alert("HTML: " + $("#test").html());
+      });
+    });
+    </script>
+<script> 
+    function isWorkingHours() {  
+        // 获取当前日期和时间  
+        let now = new Date();  
+    
+        // 获取星期几（0代表周日，1代表周一，...，6代表周六）  
+        let dayOfWeek = now.getDay();  
+    
+        // 检查是否是周一到周五  
+        if (dayOfWeek < 1 || dayOfWeek > 5) {  
+            return false;  
+        }  
+    
+        // 获取当前小时和分钟  
+        let hours = now.getHours();  
+        let minutes = now.getMinutes();  
+    
+        // 将时间转换为分钟表示，以便进行比较  
+        let currentTimeInMinutes = hours * 60 + minutes;  
+    
+        // 定义工作时间段的开始和结束（分钟表示）  
+        let startTimeInMinutes = 9 * 60 + 15; // 9点15分  
+        let endTimeInMinutes = 15 * 60; // 下午3点（即15点）  
+    
+        // 检查当前时间是否在工作时间段内  
+        return currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes;  
+    }  
+    // iclear = 0;
+    // 模拟命令行输出
+    function simulateCommand(terminal,command) {
+        var terminal = document.getElementById(terminal);
+        // if ( iclear % 6 == 0){
+        // terminal.innerHTML = '';
+        // }
+        terminal.innerHTML = '$ ' + command + '<br><br>';
+        // $('#'+terminal).html('$ ' + command + '<br>');
+        // 这里可以添加逻辑来执行命令并获取输出
+        // terminal.innerHTML += '<br>输出: 模拟命令执行结果<br>';
+    }
+ 
+    // if ( isWorkingHours() ){
+    // 模拟用户输入命令
+    setInterval(function(){
+        var date = new Date();
+        $.ajax({
+                url: 'http://{{userconfig.ipconfig}}/getData', // 接口URL
+                type: 'GET', // 请求类型，可以是GET、POST等
+                dataType: 'text', // 预期服务器返回的数据类型
+                success: function(response) {
+                    // simulateCommandClear();
+                    // simulateCommand('cmd..........'+new Date()+response);
+                    simulateCommand('terminal',date.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'})+'\r\n<br>'+response);
+                    // var $div1 = $('#terminal');  
+                    // $div1.scrollTop($div1[0].scrollHeight); // 直接设置scrollTop为scrollHeight 
+                    // 请求成功后的回调函数
+                    console.log('数据获取成功:', response);
+                    // 这里可以处理获取到的数据，例如显示在页面上等
+                },
+                error: function(xhr, status, error) {
+                    // 请求失败后的回调函数
+                    console.error('数据获取失败:', error);
+                }
+            });
+
+            $.ajax({
+                url: 'http://{{userconfig.ipconfig}}/getData2', // 接口URL
+                type: 'GET', // 请求类型，可以是GET、POST等
+                dataType: 'text', // 预期服务器返回的数据类型
+                success: function(response) {
+                    // simulateCommandClear();
+                    // simulateCommand('cmd..........'+new Date()+response);
+                    simulateCommand('terminal2',date.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'})+'\r\n<br>'+response);
+                    // var $div2 = $('#terminal2');
+                    // $div2.scrollTop($div2[0].scrollHeight); // 直接设置scrollTop为scrollHeight 
+                    // 请求成功后的回调函数
+                    console.log('数据获取成功:', response);
+                    // 这里可以处理获取到的数据，例如显示在页面上等
+                },
+                error: function(xhr, status, error) {
+                    // 请求失败后的回调函数
+                    console.error('数据获取失败:', error);
+                }
+            });
+
+            $.ajax({
+                url: 'http://{{userconfig.ipconfig}}/getData3', // 接口URL
+                type: 'GET', // 请求类型，可以是GET、POST等
+                dataType: 'text', // 预期服务器返回的数据类型
+                success: function(response) {
+                    // simulateCommandClear();
+                    // simulateCommand('cmd..........'+new Date()+response);
+                    simulateCommand('terminal3',date.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'})+'\r\n<br>'+response);
+                    // var $div3 = $('#terminal3');
+                    // $div3.scrollTop($div3[0].scrollHeight); // 直接设置scrollTop为scrollHeight 
+                    // 请求成功后的回调函数
+                    console.log('数据获取成功:', response);
+                    // 这里可以处理获取到的数据，例如显示在页面上等
+                },
+                error: function(xhr, status, error) {
+                    // 请求失败后的回调函数
+                    console.error('数据获取失败:', error);
+                }
+            });
+
+        },3000
+    );
+    // }
+    
+    // simulateCommand('{{ cmdlist }}');
+</script>
+</head>
+<body>
+
+<p id="test">这是段落中的 <b>粗体</b> 文本。</p>
+<button id="btn1">显示文本</button>
+<button id="btn2">显示 HTML</button>
+ 
+<div id="pl">
+<div id="terminal"></div>
+ 
+<div id="terminal2"></div>
+
+<div id="terminal3"></div>
+</div>
+
+</body>
+</html>
