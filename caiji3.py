@@ -11,17 +11,33 @@ import array as arr
 import random
 import redis
 
+
 # 目标URL  
 # 上证
-urlsh = 'http://xici.compass.cn/stock/newsort.php?market=sh&type=A&sort=ratio&order=desc&cls=2'  
+urlsh = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|0|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
+urlsh2 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|31|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
 # 深证
-urlsz = 'http://xici.compass.cn/stock/newsort.php?market=sz&type=A&sort=ratio&order=desc&cls=2'
+urlsz = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|0|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
+urlsz2 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|31|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
+
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 # redis累加
 def stockInc(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    r.incrby(rdate+':'+rstock,1)
+    expire_time_in_seconds = 24 * 60 * 60  # 48小时  
+
+    # 尝试设置key的值，如果key不存在（NX）  
+    if r.setnx(rdate+':'+rstock, 1):  
+        # 设置过期时间  
+        r.expire(rdate+':'+rstock, expire_time_in_seconds)  
+        r.incrby(rdate+':'+rstock,1)
+    else:  
+        # 如果key已存在，则累加  
+        # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的  
+        # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差  
+        r.incrby(rdate+':'+rstock,1)
+
 # 获取redis累加值 
 def getStockInc(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
@@ -79,20 +95,36 @@ def szzt( urlsh ,dbType=1):
     #返回涨停列表
     stockZtList = []
     strRepost = ''
+    # 定义请求头  
+    headers = {  
+        'Accept': '*/*',  
+        'Accept-Encoding': 'gzip, deflate',  
+        'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',  
+        'Connection': 'keep-alive',  
+        'Cookie': 'Hm_lvt_08be8f13a5bc5a326158306b8930299f=2723381822; Qs_lvt_8880=2723381821; Qs_pv_8880=577795623916564500',
+        'Host': 'hqdata.compass.cn',
+        'Referer': 'http://xici.compass.cn/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
+        # 注意：这里不应该包含实际的Cookie值，因为它们是用户特定的，  
+        # 并且在这个例子中提供的是无效的或者过期的。  
+        # 如果有必要，你应该在代码中安全地处理Cookie。  
+        # 'Cookie': 'Hm_lvt_08be8f13a5bc5a326158306b8930299f=1723381822; Qs_lvt_8880=1723381822',  
+        # 如果你有有效的Cookie，请在这里添加  
+    }
     # 发送HTTP GET请求  
-    response = requests.get(urlsh)
+    response = requests.get(urlsh, headers=headers)
     # 检查请求是否成功  
     if response.status_code == 200:  
         # 获取HTML内容  
         html_content = response.text  
         # 使用正则表达式查找newSortPreData变量的值  
         # 注意：这个正则表达式假设newSortPreData被赋值为一个JSON格式的字符串  
-        pattern = r'var newSortPreData = (.*)0\";'  
+        pattern = r'AJAJ_ON_READYSTATE_CHANGE\(\d+,(.*)\);0'  
         match = re.search(pattern, html_content, re.DOTALL)  
         # 获取股票排序列表Html
         jshtml = match.group(1)
         # 截取字符串前后字符
-        jsHtmlJson = jshtml[10:-3].replace('\\\\\\','')
+        jsHtmlJson = jshtml[10:-3].replace('\\"', '"').replace('\\\\', '\\').replace('\\', '')  
 
         # 使用正则表达式替换所有的'false'为'False'  
         fixed_str = re.sub(r'\bfalse\b', 'False', jsHtmlJson)  
@@ -187,10 +219,12 @@ def szzt( urlsh ,dbType=1):
 def reList(dbType): 
     # 上证涨幅排行榜
     stockListArr1 = szzt( urlsh,dbType )
+    stockListArr11 = szzt( urlsh2,dbType )
     # 深证涨幅排行榜
     stockListArr2 = szzt( urlsz,dbType )
+    stockListArr22 = szzt( urlsz2,dbType )
 
-    stockArr = stockListArr1 + stockListArr2
+    stockArr = stockListArr1 + stockListArr11 + stockListArr2 + stockListArr22
  
     stockZtListOut = sorted(stockArr, key=lambda x:x[1] )  
     stockListHtml = ''
@@ -204,14 +238,13 @@ def reList(dbType):
         if iColore == 2:
             iColorLine = '<font color="#FFD700">'
  
-        
         stockListHtml += iColorLine + str(stockInfo[0])+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font>' +' ↑ <br>'
         iColore = iColore +1
     return stockListHtml
 
 
-# print( reList(2)  )
-# reList(2)
+# print( reList(1)  )
+# reList(3)
 # print(  )
 # reList(3)
 
