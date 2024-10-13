@@ -19,6 +19,11 @@ urlsh = 'http://xici.compass.cn/stock/newsort.php?market=sh&type=A&sort=ratio&or
 urlsz = 'http://xici.compass.cn/stock/newsort.php?market=sz&type=A&sort=ratio&order=desc&cls=2'
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
+# redis删除涨停计数
+def stockDel(rstock):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )    
+    r.delete(rdate+':'+rstock)
+
 # redis累加
 def stockInc(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
@@ -144,7 +149,9 @@ def szzt( urlsh ,dbType=1):
                     stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
 
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
-                    stockInc(stockCode[4:])
+                    # 删除redis计数
+                    stockDel(stockCode[4:])
+
                     if iLine % 4 == 0:  
                        strRepost += '<br>'      
                     i = i + 1
