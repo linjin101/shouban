@@ -226,7 +226,7 @@ def szzt( urlsh ,dbType=1):
             if dbType == 2:
                 if stockMcj == 0.0 and ( stockCode[4:6] == '00' or stockCode[4:6] == '60' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
                     # 如果破板4,回封5
-                    if getStockHF(stockCode[4:]) == 4:
+                    if getStockHF(stockCode[4:]) == 4 or getStockHF(stockCode[4:]) == 5:
                         stockHF(stockCode[4:],5)
                         print ( '回封设置:'  )
                         print(  getStockHF(stockCode[4:]) )
@@ -247,7 +247,7 @@ def szzt( urlsh ,dbType=1):
             if dbType == 3:
                 if stockMcj == 0.0 and ( stockCode[4:6] == '30' or stockCode[4:6] == '68' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
                     # 如果破板4,回封5
-                    if getStockHF(stockCode[4:]) == 4:
+                    if getStockHF(stockCode[4:]) == 4 or getStockHF(stockCode[4:]) == 5:
                         stockHF(stockCode[4:],5)
                         print ( '回封设置:'  )
                         print(  getStockHF(stockCode[4:]) )
@@ -313,7 +313,7 @@ def reList(dbType):
             stockHF = '破'
         elif getStockHF(stockInfo[0]) == 5:
             stockHF = '回封'
-        stockListHtml += iColorLine + str(stockInfo[0])+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ stockHF+'</font>' +' ↑ <br>'
+        stockListHtml += iColorLine + str(stockInfo[0])+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font>' +' ↑ '+'<font color="#FF0000">'+stockHF+'</font>'+'<br>'
 
         iColore = iColore +1
         # stock列表存放redis
