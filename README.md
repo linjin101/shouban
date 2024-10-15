@@ -10,10 +10,12 @@ nohup  python /www/stock/flask/app.py > /www/stock/flask/caiji.log 2>&1 &
 nohup  /www/stock/flask/request_time_service.sh > /www/stock/flask/request_time_service.log 2>&1 &
 ## 关闭
 /www/stock/flask/killcaiji.sh
+/www/stock/flask/killrequest.sh
+killall python
 
 ## 日志
 tail -f /www/stock/flask/caiji.log
-
+tail -f /www/stock/flask/request_time_service.log
 
 
 ## 定时
@@ -73,9 +75,9 @@ chmod +x /www/stock/flask/request_time_service.sh
 
 4. **注意事项**：
 
-   - 确保你的脚本路径正确。
-   - 确保 `curl` 或其他请求工具已安装并可用。
-   - 如果系统时间发生变化（如系统时间被手动修改或 NTP 服务同步），脚本可能会受到影响。
-   - 如果脚本需要长时间运行，考虑日志记录和错误处理机制。
+查找脚本
+ps aux | grep request_time_service.sh
+关闭脚本
+kill -9 1234
 
 通过以上步骤，你应该能够实现周一到周五的 9:15 到 15:00 每 5 秒钟请求一次时间服务的需求。

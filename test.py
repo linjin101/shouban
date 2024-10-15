@@ -9,6 +9,9 @@ import array as arr
 import random
 import caiji3
 
-caiji3.reList(1)
-caiji3.reList(2)
-caiji3.reList(3)
+counter = 1
+while counter < 10000:
+    caiji3.reList(1)
+    caiji3.reList(2)
+    caiji3.reList(3)
+    counter = counter + 1

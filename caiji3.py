@@ -206,11 +206,13 @@ def szzt( urlsh ,dbType=1):
             # print(stockCode,stockZf,stcokPriceNum)
             if dbType == 1:
                 if istockZf > stcokPriceNum and stockMcj != 0.0 and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
+                    if getStockHF(stockCode[4:]) == 3 or getStockHF(stockCode[4:]) == 5:
+                        stockHF(stockCode[4:],4)
+                        #破板设置4
+                        print ( '破板设置:'  )
+                        print(  getStockHF(stockCode[4:]) )
                     # 删除redis计数
                     stockDel(stockCode[4:])
-                    # 破板设置4
-                    if getStockHF(stockCode[4:]) != 0:
-                        stockHF(stockCode[4:],4)
                     # 股票价格列表放到数组
                     stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
@@ -223,11 +225,16 @@ def szzt( urlsh ,dbType=1):
             # 封板显示
             if dbType == 2:
                 if stockMcj == 0.0 and ( stockCode[4:6] == '00' or stockCode[4:6] == '60' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
-                    # 涨停累加
-                    stockInc(stockCode[4:])
                     # 如果破板4,回封5
                     if getStockHF(stockCode[4:]) == 4:
                         stockHF(stockCode[4:],5)
+                        print ( '回封设置:'  )
+                        print(  getStockHF(stockCode[4:]) )
+                    else:
+                        stockHF(stockCode[4:],3)
+                    
+                    # 涨停累加
+                    stockInc(stockCode[4:])
                     stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
                     
@@ -239,10 +246,16 @@ def szzt( urlsh ,dbType=1):
             # 创业板显示 and stockCode[4:2] == '30' 
             if dbType == 3:
                 if stockMcj == 0.0 and ( stockCode[4:6] == '30' or stockCode[4:6] == '68' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
-                    stockInc(stockCode[4:])
                     # 如果破板4,回封5
                     if getStockHF(stockCode[4:]) == 4:
                         stockHF(stockCode[4:],5)
+                        print ( '回封设置:'  )
+                        print(  getStockHF(stockCode[4:]) )
+                    else:
+                        stockHF(stockCode[4:],3)
+
+                    # 涨停累加
+                    stockInc(stockCode[4:])
                     stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
 
