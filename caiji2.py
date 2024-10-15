@@ -140,11 +140,11 @@ def szzt( urlsh ,dbType=1):
             # print(stockCode,stockZf,stcokPriceNum)
             if dbType == 1:
                 if istockZf > stcokPriceNum and stockMcj != 0.0 and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
+                    stockInc(stockCode[4:])
                     # 股票价格列表放到数组
                     stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
-
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
-                    stockInc(stockCode[4:])
+                    
                     if iLine % 4 == 0:  
                        strRepost += '<br>'      
                     i = i + 1

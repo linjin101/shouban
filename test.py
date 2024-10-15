@@ -1,20 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import time  # 引入time模块
 import re  
-  
-# 给定的字符串  
-input_string = "AJAJ_ON_READYSTATE_CHANGE(1728793995249721,\"[2801, \"[[\\\"SZHQ001279\\\", 9.68, 87.12, 178.01, 319154, 470853, 245.0, 87.12, 178.01, 178.02, 1738.95, 0.0, 86.72, 2.9, false, \\\"N%E5%BC%BA%E9%82%A6\\\", 88.0, 1630.99], [\\\"SZHQ002703\\\", 11.91, 11.8, 12.85, 863850, 110093, 13.1, 11.75, 12.85, 12.86, 7.89, 1.78, 14.74, 0.55, false, \\\"%E6%B5%99%E6%B1%9F%E4%B8%96%E5%AE%9D\\\", 39.0, 11.34]]\"]\");0"  
-  
-# 正则表达式匹配以双引号包围的、包含数组的字符串部分  
-# 注意：这里我们假设数组部分总是被第二个参数的双引号包围，并且函数名和参数数量是固定的  
-# 在实际应用中，你可能需要更健壮的正则表达式来处理变化的情况  
-match = re.search(r'AJAJ_ON_READYSTATE_CHANGE\d+,\"(\[.*?\])\";\d+', input_string)  
-  
-if match:  
-    # 提取匹配到的数组字符串（包含转义字符）  
-    array_string = match.group(1)  
-    print("提取到的数组字符串（包含转义字符）:")  
-    print(array_string)  
-else:  
-    print("没有找到匹配的数组部分")  
-  
-# 注意：此时array_string仍然包含转义字符，如果你需要将其转换为一个真正的Python列表，  
-# 你需要进一步处理这些转义字符，并使用json模块来解析它。但在这个例子中，我们只关注提取字符串。
+import json
+from urllib.parse import unquote_plus  
+# 导入tushare
+import array as arr
+import random
+import caiji3
+
+caiji3.reList(1)
+caiji3.reList(2)
+caiji3.reList(3)

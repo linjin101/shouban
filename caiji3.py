@@ -16,9 +16,11 @@ import redis
 # 上证
 urlsh = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|0|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
 urlsh2 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|31|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
+urlsh3 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|61|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
 # 深证
 urlsz = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|0|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
 urlsz2 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|31|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
+urlsz3 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|61|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
 
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
@@ -37,6 +39,13 @@ def stockDel(rstock):
         # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的  
         # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差  
         r.set(rdate+':'+rstock,0)
+
+def setStockList(stockList,listFlag):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+    expire_time_in_seconds = 24 * 60 * 60  # 48小时  
+
+    r.set(listFlag,stockList)
+    r.expire(listFlag, expire_time_in_seconds) 
 
 # redis累加
 def stockInc(rstock):
@@ -61,6 +70,28 @@ def getStockInc(rstock):
     if rvalue is not None:  
         rvalue = int(rvalue.decode('utf-8'))
     return rvalue
+
+# redis回封,破板4，回封5
+def getStockHF(rstock):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+    rvalue = r.get(rdate+':'+rstock+'HF')
+    if rvalue is not None:  
+        rvalue = int(rvalue.decode('utf-8'))
+        return rvalue
+    return 0
+
+# redi回封,涨停3，破板4，回封5
+def stockHF(rstock,rFlag):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+    expire_time_in_seconds = 24 * 60 * 60  # 48小时  
+
+    # 尝试设置key的值，如果key不存在（NX）  
+    if r.setnx(rdate+':'+rstock+'HF', rFlag):  
+        # 设置过期时间  
+        r.expire(rdate+':'+rstock+'HF', expire_time_in_seconds)  
+        r.set(rdate+':'+rstock+'HF',rFlag)
+    else:  
+        r.set(rdate+':'+rstock+'HF',rFlag)
 
 # 多个股票列表整理,股票代码加上.SZ .SH
 def tscodelist(stocklist): 
@@ -175,12 +206,15 @@ def szzt( urlsh ,dbType=1):
             # print(stockCode,stockZf,stcokPriceNum)
             if dbType == 1:
                 if istockZf > stcokPriceNum and stockMcj != 0.0 and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
-                    # 股票价格列表放到数组
-                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
-
-                    strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
                     # 删除redis计数
                     stockDel(stockCode[4:])
+                    # 破板设置4
+                    if getStockHF(stockCode[4:]) != 0:
+                        stockHF(stockCode[4:],4)
+                    # 股票价格列表放到数组
+                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
+                    strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
+                    
                     if iLine % 4 == 0:  
                        strRepost += '<br>'      
                     i = i + 1
@@ -189,10 +223,14 @@ def szzt( urlsh ,dbType=1):
             # 封板显示
             if dbType == 2:
                 if stockMcj == 0.0 and ( stockCode[4:6] == '00' or stockCode[4:6] == '60' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
-                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
- 
-                    strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
+                    # 涨停累加
                     stockInc(stockCode[4:])
+                    # 如果破板4,回封5
+                    if getStockHF(stockCode[4:]) == 4:
+                        stockHF(stockCode[4:],5)
+                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
+                    strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
+                    
                     if iLine % 2 == 0:  
                        strRepost += '<br>'      
                     i = i + 1
@@ -201,17 +239,17 @@ def szzt( urlsh ,dbType=1):
             # 创业板显示 and stockCode[4:2] == '30' 
             if dbType == 3:
                 if stockMcj == 0.0 and ( stockCode[4:6] == '30' or stockCode[4:6] == '68' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
-                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
- 
-                    strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
                     stockInc(stockCode[4:])
+                    # 如果破板4,回封5
+                    if getStockHF(stockCode[4:]) == 4:
+                        stockHF(stockCode[4:],5)
+                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
+                    strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
+
                     if iLine % 2 == 0:  
                        strRepost += '<br>'      
                     i = i + 1
                     iLine = iLine + 1
-
-
-
         # 整理tushare股票列表
         # tscodelist2 = tscodelist(stockZtList)
         # print( tscodelist2 )
@@ -237,12 +275,14 @@ def reList(dbType):
     # 上证涨幅排行榜
     stockListArr1 = szzt( urlsh,dbType )
     stockListArr11 = szzt( urlsh2,dbType )
+    stockListArr111 = szzt( urlsh3,dbType )
+
     # 深证涨幅排行榜
     stockListArr2 = szzt( urlsz,dbType )
     stockListArr22 = szzt( urlsz2,dbType )
+    stockListArr222 = szzt( urlsz3,dbType )
 
-    stockArr = stockListArr1 + stockListArr11 + stockListArr2 + stockListArr22
- 
+    stockArr = stockListArr1 + stockListArr11 + stockListArr111 + stockListArr2 + stockListArr22 + stockListArr222
     stockZtListOut = sorted(stockArr, key=lambda x:x[1] )  
     stockListHtml = ''
     iColore = 0
@@ -255,12 +295,25 @@ def reList(dbType):
         if iColore == 2:
             iColorLine = '<font color="#FFD700">'
  
-        stockListHtml += iColorLine + str(stockInfo[0])+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font>' +' ↑ <br>'
+        stockHF = ''
+        if getStockHF(stockInfo[0]) == 4:
+            stockHF = '破'
+        elif getStockHF(stockInfo[0]) == 5:
+            stockHF = '回封'
+        stockListHtml += iColorLine + str(stockInfo[0])+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ stockHF+'</font>' +' ↑ <br>'
+
         iColore = iColore +1
+        # stock列表存放redis
+        setStockList(stockListHtml,dbType)
     return stockListHtml
 
+# 返回redis的列表
+def getStockList(dbType):
+    return r.get(dbType)
 
-# print( reList(1)  )
+print( reList(1)  )
+print( reList(2)  )
+print( reList(3)  )
 # reList(3)
 # print(  )
 # reList(3)
