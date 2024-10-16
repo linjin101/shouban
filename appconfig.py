@@ -9,7 +9,7 @@ ipconfigHtml = ipconfig
 
 # 服务器MySQL数据库连接参数  
 # username = 'root'  
-# password = 'root@101'  
+# password = 'root101'  
 # host = 'localhost'  
 # database = 'dfstock'  
 

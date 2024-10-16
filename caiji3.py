@@ -10,7 +10,7 @@ import tushare as ts
 import array as arr
 import random
 import redis
-
+import caijithsgl
 
 # 目标URL  
 # 上证
@@ -27,7 +27,7 @@ r = redis.StrictRedis(host='localhost', port=6379, db=0)
 # redis删除涨停计数
 def stockDel(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60  # 48小时  
+    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天 
 
     # 尝试设置key的值，如果key不存在（NX）  
     if r.setnx(rdate+':'+rstock, 0):  
@@ -42,7 +42,7 @@ def stockDel(rstock):
 
 def setStockList(stockList,listFlag):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60  # 48小时  
+    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
 
     r.set(listFlag,stockList)
     r.expire(listFlag, expire_time_in_seconds) 
@@ -50,7 +50,7 @@ def setStockList(stockList,listFlag):
 # redis累加
 def stockInc(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60  # 48小时  
+    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
 
     # 尝试设置key的值，如果key不存在（NX）  
     if r.setnx(rdate+':'+rstock, 1):  
@@ -83,7 +83,7 @@ def getStockHF(rstock):
 # redi回封,涨停3，破板4，回封5
 def stockHF(rstock,rFlag):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60  # 48小时  
+    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天  
 
     # 尝试设置key的值，如果key不存在（NX）  
     if r.setnx(rdate+':'+rstock+'HF', rFlag):  
@@ -313,7 +313,7 @@ def reList(dbType):
             stockHF = '破'
         elif getStockHF(stockInfo[0]) == 5:
             stockHF = '回封'
-        stockListHtml += iColorLine + str(stockInfo[0])+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font>' +' ↑ '+'<font color="#FF0000">'+stockHF+'</font>'+'<br>'
+        stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font>' +'↑'+'<font color="#FF0000"><b>'+stockHF+'</b></font> '+caijithsgl.getStockGl(stockInfo[0])+'<br>'
 
         iColore = iColore +1
         # stock列表存放redis

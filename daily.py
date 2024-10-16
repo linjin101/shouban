@@ -4,10 +4,6 @@ import tushare as ts
 from datetime import datetime, timedelta  
 from sqlalchemy import create_engine  
 
-# SELECT st.trade_date ,count(1)
-# FROM `stock_data` st
-# group by st.trade_date
-
 def stockListPrice(yesterday):
     # 确定时间
     today = yesterday
@@ -68,9 +64,12 @@ def stockListPrice(yesterday):
     host = appconfig.host
     database = appconfig.database
     
+    dburl = username+':'+password+'@'+host+'/'+database
      
     # 创建数据库连接字符串  
-    engine = create_engine(f'mysql+pymysql://{username}:{password}@{host}/{database}')  
+    # engine = create_engine(f'mysql+pymysql://{username}:{password}@{host}/{database}')
+    # engine = create_engine(f'mysql+pymysql://'+dburl)  
+    engine = create_engine(f'mysql+pymysql://{username}:{password}@localhost/{database}')
         
     # 将DataFrame写入MySQL数据库  
     # 假设数据库中已经有一个名为'stock_data'的表，其结构与DataFrame相同  
@@ -82,7 +81,7 @@ def stockListPrice(yesterday):
 today = datetime.now()
 i=0
 # 采集range(1)几天前的数据
-for i in range(60):  
+for i in range(10):  
     # 计算昨天的日期和时间  
     yesterday = today - timedelta(days=i) 
     # 这里写你想要在循环中执行的代码  
@@ -92,6 +91,11 @@ for i in range(60):
         stockListPrice(yesterday)
     except:
         print("except!")
+
+# SELECT st.trade_date ,count(1)
+# FROM `stock_data` st
+# group by st.trade_date
+# order by st.trade_date desc
 
 # 30 和 68
 # SELECT *

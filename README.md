@@ -18,6 +18,29 @@ tail -f /www/stock/flask/caiji.log
 tail -f /www/stock/flask/request_time_service.log
 
 
+### python
+#新版python
+ln -s /usr/local/python3.10.9/bin/python3 /usr/bin/python
+
+ln -s /usr/local/python3.10.9/bin/python3.10 /usr/bin/python3.10
+ln -s /usr/local/python3.10.9/bin/pip3.10 /usr/bin/pip3.10
+#原版python
+ln -s /usr/libexec/platform-python3.6 /usr/bin/python
+
+### 创建一个名为 myenv 的虚拟环境  
+python3 -m venv myenv  
+  
+### 激活虚拟环境（Linux/macOS）  
+source myenv/bin/activate  
+
+### 删除环境
+conda env remove --name myenv
+
+### 在虚拟环境中安装包  
+pip install mysql-connector-python
+
+
+
 ## 定时
 
 在 CentOS 系统上，你可以使用 `cron` 和 `while` 循环结合 `sleep` 命令来实现每 5 秒钟执行一次某个任务的需求。不过需要注意的是，`cron` 本身的最小时间间隔是 1 分钟。为了实现更短的时间间隔，我们可以利用 `cron` 来启动一个脚本，然后在脚本中使用 `while` 循环和 `sleep` 命令来实现每 5 秒执行一次。
@@ -81,3 +104,5 @@ ps aux | grep request_time_service.sh
 kill -9 1234
 
 通过以上步骤，你应该能够实现周一到周五的 9:15 到 15:00 每 5 秒钟请求一次时间服务的需求。
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root101';
+ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'root101';

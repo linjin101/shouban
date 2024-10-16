@@ -99,7 +99,7 @@ def fetch_concept(ts_code):
     url = 'https://basic.10jqka.com.cn/'+ts_code+'/concept.html'  
     concept_names = fetch_concept_names(url)  
     # print(concept_names)  
-    fetch_concept_list = concept_names + concept_span
+    fetch_concept_list = str(concept_names) + str(concept_span)
     return fetch_concept_list
 
 #######################################################################################################
@@ -113,13 +113,27 @@ def connect_to_mysql():
         )  
         if connection.is_connected():  
             db_Info = connection.get_server_info()  
-            print(f"Connected to MySQL Server version {db_Info}")  
-            print("成功连接到MySQL数据库")  
+            # print(f"Connected to MySQL Server version {db_Info}")  
+            # print("成功连接到MySQL数据库")  
             return connection  
         else:  
             print("连接失败")  
     except Error as e:  
         print(f"连接错误: {e}")  
+# 查询
+def execute_search(connection, query):
+    if connection.is_connected():  
+        cursor = connection.cursor(dictionary=True)  # 使用字典游标以便获取结果作为字典  
+        # 执行SQL查询  
+        cursor.execute(query)  
+        # 获取查询结果  
+        result = cursor.fetchone()  # fetchone() 获取查询结果的第一行，或者你可以使用 fetchall() 获取所有行  
+        # 处理查询结果  
+        # if result:  
+        #     print(f"The first concept is: {result['first_concept']}")  
+        # else:  
+        #     print("No result found for the given ts_code.")
+    return result
   
 def execute_query(connection, query, params=None):  
     cursor = connection.cursor()  
@@ -197,8 +211,25 @@ def fetch_concept_caiji():
   
         connection.close()  
 
-if __name__ == "__main__":  
-    fetch_concept_caiji()
+def getStockGl(ts_code):
+    stockGL = ''
+    connection = connect_to_mysql()  
+    if connection:  
+        query = f"""
+        SELECT SUBSTRING_INDEX(sc.concepts, ',', 1) as stockGL FROM `stock_concepts` sc where sc.ts_code = '{ts_code}'
+        """
+        results = execute_search(connection, query)  
+        # print(results)
+        stockGL = results['stockGL']
+        # if results:  
+        #     stockGL = results[0]
+        #     print(stockGL)
+        connection.close()
+
+    return stockGL
+
+# print( getStockGl('002506') )
+# fetch_concept_caiji()
 
 # print( fetch_concept('000566') )
 # 获取ts_code
