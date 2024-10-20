@@ -16,7 +16,7 @@ if (( current_epoch_seconds >= start_epoch_seconds && current_epoch_seconds <= e
     while (( current_epoch_seconds >= start_epoch_seconds && current_epoch_seconds <= end_epoch_seconds )); do
 
         # 请求时间服务（这里假设使用 curl，你可以根据实际情况替换）  
-        /usr/bin/python /www/stock/flask/test.py  
+        python /www/stock/flask/test.py  
         # 等待 3 秒  
         sleep 3  
         # 重新获取当前时间和秒数  

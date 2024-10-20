@@ -103,6 +103,7 @@ ps aux | grep request_time_service.sh
 关闭脚本
 kill -9 1234
 
+mysql -hlocalhost -uroot -p
 通过以上步骤，你应该能够实现周一到周五的 9:15 到 15:00 每 5 秒钟请求一次时间服务的需求。
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root101';
 ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'root101';
