@@ -1,6 +1,14 @@
+import platform  
+# 获取操作系统名称  
+os_name = platform.system()  
 
 # 本地或阿里云服务器标识
-server = 'local' # aliyun
+if os_name == 'Linux':
+    server = 'aliyun'
+elif os_name == 'Window':
+    server = 'local'
+else:
+    server = 'local'
 
 if server == 'local':
     # 本地调试配置
