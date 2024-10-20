@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import appconfig
 import time  # 引入time模块
 import requests  
 import re  
@@ -22,7 +23,8 @@ urlsz = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|0|
 urlsz2 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|31|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
 urlsz3 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|61|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
 
-r = redis.StrictRedis(host='localhost', port=6379, db=0)
+# redis配置读取
+r = redis.StrictRedis(host=appconfig.redishost, port=appconfig.redisport,password=appconfig.redispassword, db=appconfig.redisdbnum)
 
 # redis删除涨停计数
 def stockDel(rstock):
@@ -308,12 +310,22 @@ def reList(dbType):
         if iColore == 2:
             iColorLine = '<font color="#FFD700">'
  
+        # 破板和回封
         stockHF = ''
-        if getStockHF(stockInfo[0]) == 4:
+        stockRdHF = getStockHF(stockInfo[0])
+        # print(stockRdHF)
+        if stockRdHF == 4:
             stockHF = '破'
-        elif getStockHF(stockInfo[0]) == 5:
+        elif stockRdHF == 5:
             stockHF = '回封'
-        stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font>' +'↑'+'<font color="#FF0000"><b>'+stockHF+'</b></font> '+caijithsgl.getStockGl(stockInfo[0])+'<br>'
+
+        # 首板标识
+        ztxs = caijithsgl.getStockTopBanRedis(stockInfo[0])
+        # 概念
+        stockGl = caijithsgl.getStockGlRedis(stockInfo[0])
+
+        stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font>' +'↑'+'<font color="#FF0000"><b>'+ztxs+'</b></font> '+'<font color="#FF0000"><b>'+stockHF+'</b></font> '+stockGl+'<br>'
+        print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
 
         iColore = iColore +1
         # stock列表存放redis
@@ -324,9 +336,12 @@ def reList(dbType):
 def getStockList(dbType):
     return r.get(dbType)
 
-print( reList(1)  )
-print( reList(2)  )
-print( reList(3)  )
+reList(1)
+reList(2)
+reList(3)
+# print( reList(1)  )
+# print( reList(2)  )
+# print( reList(3)  )
 # reList(3)
 # print(  )
 # reList(3)

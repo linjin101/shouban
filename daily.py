@@ -3,6 +3,7 @@ import appconfig
 import tushare as ts
 from datetime import datetime, timedelta  
 from sqlalchemy import create_engine  
+import caijithsgl
 
 def stockListPrice(yesterday):
     # 确定时间
@@ -80,8 +81,8 @@ def stockListPrice(yesterday):
 # 获取当前日期
 today = datetime.now()
 i=0
-# 采集range(1)几天前的数据
-for i in range(10):  
+# 采集range(1)几天前的数据,设置10天可以跨过所有假期
+for i in range(1):  
     # 计算昨天的日期和时间  
     yesterday = today - timedelta(days=i) 
     # 这里写你想要在循环中执行的代码  
@@ -91,6 +92,11 @@ for i in range(10):
         stockListPrice(yesterday)
     except:
         print("except!")
+
+# 设置提取今日涨停列表，作为昨日涨停列表存放redis
+print( caijithsgl.setStockTopBanToRedis() )
+# 设置股票概念到redis
+caijithsgl.setStockGlRedis()
 
 # SELECT st.trade_date ,count(1)
 # FROM `stock_data` st

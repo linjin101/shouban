@@ -1,8 +1,15 @@
 import appconfig
+import redis
+import time  # 引入time模块
 import requests  
 from bs4 import BeautifulSoup
 import mysql.connector  
 from mysql.connector import Error
+
+
+# redis配置读取
+r = redis.StrictRedis(host=appconfig.redishost, port=appconfig.redisport,password=appconfig.redispassword, db=appconfig.redisdbnum)
+
 
 def hy_str(s):
     # s = "计算机 -- IT服务Ⅱ -- IT服务Ⅲ （共117家）"  
@@ -134,6 +141,21 @@ def execute_search(connection, query):
         # else:  
         #     print("No result found for the given ts_code.")
     return result
+
+# 查询All
+def execute_searchall(connection, query):
+    if connection.is_connected():  
+        cursor = connection.cursor(dictionary=True)  # 使用字典游标以便获取结果作为字典  
+        # 执行SQL查询  
+        cursor.execute(query)  
+        # 获取查询结果  
+        result = cursor.fetchall()  # fetchone() 获取查询结果的第一行，或者你可以使用 fetchall() 获取所有行  
+        # 处理查询结果  
+        # if result:  
+        #     print(f"The first concept is: {result['first_concept']}")  
+        # else:  
+        #     print("No result found for the given ts_code.")
+    return result
   
 def execute_query(connection, query, params=None):  
     cursor = connection.cursor()  
@@ -226,9 +248,147 @@ def getStockGl(ts_code):
         #     print(stockGL)
         connection.close()
 
-    return stockGL
+# 判断昨日涨停
+def getStockGlRedis(ts_code):
+    stockGL = r.get('stockGL:'+ts_code)
+    # 如果 my_value 是字节串，则进行解码  
+    if stockGL is not None:
+        if isinstance(stockGL, bytes):  
+            stockGL = stockGL.decode('utf-8')  # 使用 UTF-8 编码进行解码 
+        return stockGL
+    return ''
 
+# 设置概念到redis
+def setStockGlRedis():
+    connection = connect_to_mysql()  
+    if connection:  
+        query = f"""
+        SELECT ts_code, SUBSTRING_INDEX(concepts, ',', 1) as stockGL FROM `stock_concepts`
+        """
+        results = execute_searchall(connection, query)  
+
+        if results:  
+            for row in results: 
+                ts_code = row['ts_code']
+                stockGL = row['stockGL']
+                print(ts_code+':'+stockGL)
+                rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+                expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
+                r.set('stockGL:'+ts_code,stockGL)
+                r.expire('', expire_time_in_seconds) 
+        connection.close()
+
+# 设置昨日涨停列表到redis
+def setStockTopBanList(ts_code,pct_chg,topban_date):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
+
+    r.set('zrzt:'+ts_code,topban_date+':'+pct_chg)
+    r.expire('', expire_time_in_seconds) 
+
+# 判断昨日涨停
+def getStockTopBanRedis(ts_code):
+    # 尝试设置key的值，如果key不存在就是首板
+    if r.setnx('zrzt:'+ts_code, 1):
+        return ''
+    return '首板'
+
+#返回当天所有首板股票代码
+def setStockTopBanToRedis():
+    connection = connect_to_mysql()  
+    if connection:  
+        query = f"""
+        SELECT DATE_FORMAT(latest_trade.trade_date, '%Y-%m-%d') as topban_date,left(sd.ts_code,6) as ts_code,
+CONCAT(sd.pct_chg,'') as pct_chg
+        FROM stock_data sd  
+        JOIN (  
+            SELECT trade_date  
+            FROM stock_data  
+            WHERE trade_date < CURRENT_DATE()
+             ORDER BY trade_date DESC  
+            LIMIT 1  
+        ) latest_trade ON sd.trade_date = latest_trade.trade_date  
+        WHERE (  
+            (LEFT(sd.ts_code, 2) = '60' AND ROUND(sd.pre_close * 1.1, 2) = sd.close)  
+            OR  
+            (LEFT(sd.ts_code, 2) = '00' AND ROUND(sd.pre_close * 1.1, 2) = sd.close)  
+            OR  
+            (LEFT(sd.ts_code, 2) = '30' AND ROUND(sd.pre_close * 1.2, 2) = sd.close)
+            OR  
+            (LEFT(sd.ts_code, 2) = '68' AND ROUND(sd.pre_close * 1.2, 2) = sd.close)  
+        )  
+        AND sd.high = sd.close  
+        AND sd.pct_chg > 9  
+        order by sd.pct_chg desc
+        """
+        results = execute_searchall(connection, query)  
+        if results:  
+            for row in results: 
+                # print(row)
+                # ts_code, pct_chg = row
+                setStockTopBanList(row['ts_code'],row['pct_chg'],row['topban_date'])
+        
+        # if results is not None:
+        #     stockTopBan = results['pct_chg']
+        connection.close()
+    return results
+
+
+# 首板判断，需要改进多个股票判断
+def getStockTopBan(ts_code):
+    stockTopBan = 0
+    if ts_code[0:2] == '30' or ts_code[0:2] == '68':
+        ts_code = ts_code + '.SZ'
+    if ts_code[0:2] == '60' or ts_code[0:2] == '00':
+        ts_code = ts_code + '.SH'
+
+    connection = connect_to_mysql()  
+    if connection:  
+        query = f"""
+        SELECT sd.pct_chg as pct_chg
+        FROM stock_data sd  
+        JOIN (  
+            SELECT trade_date  
+            FROM stock_data  
+            WHERE trade_date < CURRENT_DATE()  
+            AND ts_code = '{ts_code}'  
+            ORDER BY trade_date DESC  
+            LIMIT 1  
+        ) latest_trade ON sd.trade_date = latest_trade.trade_date  
+        WHERE (  
+            (LEFT(sd.ts_code, 2) = '60' AND ROUND(sd.pre_close * 1.1, 2) = sd.close)  
+            OR  
+            (LEFT(sd.ts_code, 2) = '00' AND ROUND(sd.pre_close * 1.1, 2) = sd.close)  
+            OR  
+            (LEFT(sd.ts_code, 2) = '30' AND ROUND(sd.pre_close * 1.2, 2) = sd.close)
+            OR  
+            (LEFT(sd.ts_code, 2) = '68' AND ROUND(sd.pre_close * 1.2, 2) = sd.close)  
+        )  
+        AND sd.high = sd.close  
+        AND sd.pct_chg > 9  
+        AND sd.ts_code = '{ts_code}'
+        """
+        results = execute_search(connection, query)  
+        if results is not None:
+            stockTopBan = results['pct_chg']
+        connection.close()
+
+    return stockTopBan
+
+
+# 首板改成redis
+# print( setStockTopBanToRedis() )
+# print( getStockTopBanRedis('002031') )
+
+# 获取概念
+# print( getStockGlRedis('002031') )
+
+# zrzt = getStockTopBan('002843')
+# if zrzt == 0:
+#     print( zrzt )
 # print( getStockGl('002506') )
+
+# 概念采集
 # fetch_concept_caiji()
 
 # print( fetch_concept('000566') )
@@ -248,3 +408,39 @@ def getStockGl(ts_code):
 # 概念查询
 # select * from  `stock_concepts`  sc
 # where sc.concepts like '%AI%'
+
+##  涨停列表
+# SELECT pct_chg, stock_data.*
+# FROM stock_data  
+# WHERE (  
+#     (LEFT(ts_code, 2) = '60' OR LEFT(ts_code, 2) = '00' AND ROUND( pre_close*1.1, 2) = close)  
+#     OR  
+#     (LEFT(ts_code, 2) = '30' OR LEFT(ts_code, 2) = '68' AND ROUND( pre_close*1.1, 2) = close)  
+# )  
+# AND high = close and pct_chg > 9
+# and trade_date = CURRENT_DATE()
+# order by pct_chg desc
+ 
+## 昨日涨停
+# SELECT sd.ts_code,sd.pct_chg
+# FROM stock_data sd  
+# JOIN (  
+#     SELECT trade_date  
+#     FROM stock_data  
+#     WHERE trade_date < CURRENT_DATE()  
+#       AND ts_code  in ('600276.SH','300865.SZ'  )
+#     ORDER BY trade_date DESC  
+#     LIMIT 1  
+# ) latest_trade ON sd.trade_date = latest_trade.trade_date  
+# WHERE (  
+#     (LEFT(sd.ts_code, 2) = '60' AND ROUND(sd.pre_close * 1.1, 2) = sd.close)  
+#     OR  
+#     (LEFT(sd.ts_code, 2) = '00' AND ROUND(sd.pre_close * 1.1, 2) = sd.close)  
+#     OR  
+#     (LEFT(sd.ts_code, 2) = '30' AND ROUND(sd.pre_close * 1.2, 2) = sd.close)
+#     OR  
+#     (LEFT(sd.ts_code, 2) = '68' AND ROUND(sd.pre_close * 1.2, 2) = sd.close)  
+# )  
+# AND sd.high = sd.close  
+# AND sd.pct_chg > 9  
+# AND sd.ts_code in ('600276.SH','300865.SZ'  )
