@@ -94,6 +94,26 @@ def stockHF(rstock,rFlag):
         r.set(rdate+':'+rstock+'HF',rFlag)
     else:  
         r.set(rdate+':'+rstock+'HF',rFlag)
+# 破板价格保存
+def setStockPb(rstock,sprice):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天  
+
+    # 尝试设置key的值，如果key不存在（NX）  
+    if r.setnx('PB-'+rdate+':'+rstock, sprice):  
+        # 设置过期时间  
+        r.expire('PB-'+rdate+':'+rstock, expire_time_in_seconds)  
+        r.set('PB-'+rdate+':'+rstock,sprice)
+    else:  
+        r.set('PB-'+rdate+':'+rstock,sprice)
+
+# 获取破板当前价格
+def getStockPb(rstock):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+    sprice = r.get('PB-'+rdate+':'+rstock)
+    if sprice is not None:  
+        return sprice
+    return 0
 
 # 多个股票列表整理,股票代码加上.SZ .SH
 def tscodelist(stocklist): 
@@ -213,10 +233,14 @@ def szzt( urlsh ,dbType=1):
                         #破板设置4
                         print ( '破板设置:'  )
                         print(  getStockHF(stockCode[4:]) )
+
+                    elif getStockHF(stockCode[4:]) == 4: #破板价格存储
+                        setStockPb(stockCode[4:],stockMcj)
+
                     # 删除redis计数
                     stockDel(stockCode[4:])
                     # 股票价格列表放到数组
-                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
+                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
                     
                     if iLine % 4 == 0:  
@@ -237,7 +261,7 @@ def szzt( urlsh ,dbType=1):
                     
                     # 涨停累加
                     stockInc(stockCode[4:])
-                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
+                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
                     
                     if iLine % 2 == 0:  
@@ -258,7 +282,7 @@ def szzt( urlsh ,dbType=1):
 
                     # 涨停累加
                     stockInc(stockCode[4:])
-                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf] )
+                    stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
 
                     if iLine % 2 == 0:  
@@ -318,13 +342,19 @@ def reList(dbType):
             stockHF = '破'
         elif stockRdHF == 5:
             stockHF = '回封'
+        
+        #  破板状态上升
+        stockPbzt = ''
+        if stockInfo[0] != 0.0 and getStockPb(stockInfo[0]) !=0:
+            if float(stockInfo[0]) > float(getStockPb(stockInfo[0])):
+                stockPbzt = '↑↑↑'
 
         # 首板标识
         ztxs = caijithsgl.getStockTopBanRedis(stockInfo[0])
         # 概念
         stockGl = caijithsgl.getStockGlRedis(stockInfo[0])
 
-        stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font>' +'↑'+'<font color="#FF0000"><b>'+ztxs+'</b></font> '+'<font color="#FF0000"><b>'+stockHF+'</b></font> '+stockGl+'<br>'
+        stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font>' +''+'<font color="#FF0000"><b>'+ztxs+'</b></font> '+'<font color="#FF0000"><b>'+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
         print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
 
         iColore = iColore +1
