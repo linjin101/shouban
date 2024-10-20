@@ -118,10 +118,12 @@ def connect_to_mysql():
             user=appconfig.username,     # 数据库用户名  
             password=appconfig.password  # 数据库密码  
         )  
+        print(appconfig.host+'-'+appconfig.database+'-'+appconfig.username+'-'+appconfig.password)
+
         if connection.is_connected():  
             db_Info = connection.get_server_info()  
-            # print(f"Connected to MySQL Server version {db_Info}")  
-            # print("成功连接到MySQL数据库")  
+            print(f"Connected to MySQL Server version {db_Info}")  
+            print("成功连接到MySQL数据库")  
             return connection  
         else:  
             print("连接失败")  
@@ -309,13 +311,13 @@ CONCAT(sd.pct_chg,'') as pct_chg
             LIMIT 1  
         ) latest_trade ON sd.trade_date = latest_trade.trade_date  
         WHERE (  
-            (LEFT(sd.ts_code, 2) = '60' AND ROUND(sd.pre_close * 1.1, 2) = sd.close)  
+            (LEFT(sd.ts_code, 2) = '60' AND ROUND(sd.pre_close * 1.1, 2) = ROUND(sd.close,2) )  
             OR  
-            (LEFT(sd.ts_code, 2) = '00' AND ROUND(sd.pre_close * 1.1, 2) = sd.close)  
+            (LEFT(sd.ts_code, 2) = '00' AND ROUND(sd.pre_close * 1.1, 2) = ROUND(sd.close,2))  
             OR  
-            (LEFT(sd.ts_code, 2) = '30' AND ROUND(sd.pre_close * 1.2, 2) = sd.close)
+            (LEFT(sd.ts_code, 2) = '30' AND ROUND(sd.pre_close * 1.2, 2) = ROUND(sd.close,2))
             OR  
-            (LEFT(sd.ts_code, 2) = '68' AND ROUND(sd.pre_close * 1.2, 2) = sd.close)  
+            (LEFT(sd.ts_code, 2) = '68' AND ROUND(sd.pre_close * 1.2, 2) = ROUND(sd.close,2))  
         )  
         AND sd.high = sd.close  
         AND sd.pct_chg > 9  
