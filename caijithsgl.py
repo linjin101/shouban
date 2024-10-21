@@ -279,6 +279,11 @@ def setStockGlRedis():
                 r.set('stockGL:'+ts_code,stockGL)
                 r.expire('', expire_time_in_seconds) 
         connection.close()
+# 删除昨日涨停列表到redis
+def delStockTopBanList():
+    keys = r.keys('zrzt:*')
+    if keys:
+        r.delete(*keys)
 
 # 设置昨日涨停列表到redis
 def setStockTopBanList(ts_code,pct_chg,topban_date):
@@ -324,6 +329,8 @@ CONCAT(sd.pct_chg,'') as pct_chg
         order by sd.pct_chg desc
         """
         results = execute_searchall(connection, query)  
+        # 先删除后添加
+        delStockTopBanList()
         if results:  
             for row in results: 
                 # print(row)
