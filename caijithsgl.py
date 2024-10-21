@@ -311,7 +311,7 @@ CONCAT(sd.pct_chg,'') as pct_chg
         JOIN (  
             SELECT trade_date  
             FROM stock_data  
-            WHERE trade_date < CURRENT_DATE()
+            WHERE trade_date = CURRENT_DATE()
              ORDER BY trade_date DESC  
             LIMIT 1  
         ) latest_trade ON sd.trade_date = latest_trade.trade_date  

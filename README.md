@@ -11,6 +11,7 @@ python /www/stock/flask/daily.py
 ##  启动
 nohup  python /www/stock/flask/app.py > /www/stock/flask/caiji.log 2>&1 &
 nohup  /www/stock/flask/request_time_service.sh > /www/stock/flask/request_time_service.log 2>&1 &
+
 ## 关闭
 /www/stock/flask/killcaiji.sh
 /www/stock/flask/killrequest.sh
