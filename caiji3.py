@@ -35,7 +35,7 @@ def stockDel(rstock):
     if r.setnx(rdate+':'+rstock, 0):  
         # 设置过期时间  
         r.expire(rdate+':'+rstock, expire_time_in_seconds)  
-        r.set(rdate+':'+rstock,0)
+        # r.set(rdate+':'+rstock,0)
     else:  
         # 如果key已存在，则累加  
         # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的  
@@ -58,7 +58,7 @@ def stockInc(rstock):
     if r.setnx(rdate+':'+rstock, 1):  
         # 设置过期时间  
         r.expire(rdate+':'+rstock, expire_time_in_seconds)  
-        r.incrby(rdate+':'+rstock,1)
+        # r.incrby(rdate+':'+rstock,1)
     else:  
         # 如果key已存在，则累加  
         # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的  
@@ -91,7 +91,7 @@ def stockHF(rstock,rFlag):
     if r.setnx(rdate+':'+rstock+'HF', rFlag):  
         # 设置过期时间  
         r.expire(rdate+':'+rstock+'HF', expire_time_in_seconds)  
-        r.set(rdate+':'+rstock+'HF',rFlag)
+        # r.set(rdate+':'+rstock+'HF',rFlag)
     else:  
         r.set(rdate+':'+rstock+'HF',rFlag)
 # 破板价格保存
@@ -103,7 +103,7 @@ def setStockPb(rstock,sprice):
     if r.setnx('PB-'+rdate+':'+rstock, sprice):  
         # 设置过期时间  
         r.expire('PB-'+rdate+':'+rstock, expire_time_in_seconds)  
-        r.set('PB-'+rdate+':'+rstock,sprice)
+        # r.set('PB-'+rdate+':'+rstock,sprice)
     else:  
         r.set('PB-'+rdate+':'+rstock,sprice)
 
