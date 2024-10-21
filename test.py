@@ -19,7 +19,7 @@ if appconfig.server == 'aliyun':
 elif appconfig.server == 'local':
     # 本机调试用
     counter = 1
-    while counter < 15256000:
+    while counter < 3600:
         caiji3.reList(1)
         caiji3.reList(2)
         caiji3.reList(3)
