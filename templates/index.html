@@ -99,7 +99,7 @@
         // 这里可以添加逻辑来执行命令并获取输出
         // terminal.innerHTML += '<br>输出: 模拟命令执行结果<br>';
     }
- 
+
     // if ( isWorkingHours() ){
     // 模拟用户输入命令
     setInterval(function(){
@@ -107,67 +107,22 @@
         $.ajax({
                 url: 'http://{{userconfig.ipconfig}}/getData', // 接口URL
                 type: 'GET', // 请求类型，可以是GET、POST等
-                dataType: 'text', // 预期服务器返回的数据类型
+                dataType: 'json', // 预期服务器返回的数据类型
                 success: function(response) {
                     // simulateCommandClear();
                     // simulateCommand('cmd..........'+new Date()+response);
-                    simulateCommand('terminal',date.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'})+'\r\n<br>'+response);
-                    // var $div1 = $('#terminal');  
-                    // $div1.scrollTop($div1[0].scrollHeight); // 直接设置scrollTop为scrollHeight 
-                    // 请求成功后的回调函数
-                    console.log('数据获取成功:', response);
-                    // 这里可以处理获取到的数据，例如显示在页面上等
+                    simulateCommand('terminal',date.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'})+'\r\n<br>'+response[1]);
+                    simulateCommand('terminal2', date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) + '\r\n<br>' + response[2]);
+                    simulateCommand('terminal3', date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) + '\r\n<br>' + response[3]);
                 },
                 error: function(xhr, status, error) {
                     // 请求失败后的回调函数
                     console.error('数据获取失败:', error);
                 }
             });
-
-            $.ajax({
-                url: 'http://{{userconfig.ipconfig}}/getData2', // 接口URL
-                type: 'GET', // 请求类型，可以是GET、POST等
-                dataType: 'text', // 预期服务器返回的数据类型
-                success: function(response) {
-                    // simulateCommandClear();
-                    // simulateCommand('cmd..........'+new Date()+response);
-                    simulateCommand('terminal2',date.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'})+'\r\n<br>'+response);
-                    // var $div2 = $('#terminal2');
-                    // $div2.scrollTop($div2[0].scrollHeight); // 直接设置scrollTop为scrollHeight 
-                    // 请求成功后的回调函数
-                    console.log('数据获取成功:', response);
-                    // 这里可以处理获取到的数据，例如显示在页面上等
-                },
-                error: function(xhr, status, error) {
-                    // 请求失败后的回调函数
-                    console.error('数据获取失败:', error);
-                }
-            });
-
-            $.ajax({
-                url: 'http://{{userconfig.ipconfig}}/getData3', // 接口URL
-                type: 'GET', // 请求类型，可以是GET、POST等
-                dataType: 'text', // 预期服务器返回的数据类型
-                success: function(response) {
-                    // simulateCommandClear();
-                    // simulateCommand('cmd..........'+new Date()+response);
-                    simulateCommand('terminal3',date.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'})+'\r\n<br>'+response);
-                    // var $div3 = $('#terminal3');
-                    // $div3.scrollTop($div3[0].scrollHeight); // 直接设置scrollTop为scrollHeight 
-                    // 请求成功后的回调函数
-                    console.log('数据获取成功:', response);
-                    // 这里可以处理获取到的数据，例如显示在页面上等
-                },
-                error: function(xhr, status, error) {
-                    // 请求失败后的回调函数
-                    console.error('数据获取失败:', error);
-                }
-            });
-
-        },3000
+        },2000
     );
     // }
-    
     // simulateCommand('{{ cmdlist }}');
 </script>
 </head>

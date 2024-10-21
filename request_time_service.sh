@@ -17,8 +17,8 @@ if (( current_epoch_seconds >= start_epoch_seconds && current_epoch_seconds <= e
 
         # 请求时间服务（这里假设使用 curl，你可以根据实际情况替换）  
         python /www/stock/flask/test.py  
-        # 等待 3 秒  
-        sleep 3  
+        # 等待 2 秒  
+        sleep 2  
         # 重新获取当前时间和秒数  
         current_date=$(date +"%Y-%m-%d %H:%M:%S")  
         current_epoch_seconds=$(date -d "$current_date" +%s)  

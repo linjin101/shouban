@@ -13,28 +13,12 @@ app.config['SERVER_NAME'] = ipconfig
 def data():
     # 假设这是你要通过AJAX获取的数据
     # response_data = '假设这是你要通过AJAX获取的数据'
-    response_data = caiji3.getStockList(1)
-    return response_data
-    # response_data = {'key': 'dddd'}
-    # return jsonify(response_data)
-
-@app.route('/getData2')
-def data2():
-    # 假设这是你要通过AJAX获取的数据
-    # response_data = '假设这是你要通过AJAX获取的数据'
-    response_data = caiji3.getStockList(2)
-    return response_data
-    # response_data = {'key': 'dddd'}
-    # return jsonify(response_data)
-
-@app.route('/getData3')
-def data3():
-    # 假设这是你要通过AJAX获取的数据
-    # response_data = '假设这是你要通过AJAX获取的数据'
-    response_data = caiji3.getStockList(3)
-    return response_data
-    # response_data = {'key': 'dddd'}
-    # return jsonify(response_data)
+    response_data = caiji3.getStockListAll()
+    # # return response_data
+    # # response_data = {'key': 'dddd'}
+    response_data_json = jsonify( response_data )    
+    # print(response_data_json)
+    return response_data_json
 
 @app.route('/')
 def index():

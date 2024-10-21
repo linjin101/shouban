@@ -330,18 +330,21 @@ def reList(dbType):
         if iColore == 0:
             iColorLine = '<font color="#FF0000">'
         if iColore == 1:
-            iColorLine = '<font color="#FF4500">'
+            iColorLine = '<font color="#E74F4C">'
         if iColore == 2:
             iColorLine = '<font color="#FFD700">'
  
         # 破板和回封
         stockHF = ''
         stockRdHF = getStockHF(stockInfo[0])
+        stcokHFColor = '80D34B' # 绿色
         # print(stockRdHF)
         if stockRdHF == 4:
             stockHF = '破'
+            stcokHFColor = '#80D34B' # 绿色
         elif stockRdHF == 5:
             stockHF = '回封'
+            stcokHFColor = '#FF0000' # 红色
         
         #  破板状态上升
         stockPbzt = ''
@@ -354,7 +357,7 @@ def reList(dbType):
         # 概念
         stockGl = caijithsgl.getStockGlRedis(stockInfo[0])
 
-        stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font>' +''+'<font color="#FF0000"><b>'+ztxs+'</b></font> '+'<font color="#FF0000"><b>'+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
+        stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#A23735"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
         print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
 
         iColore = iColore +1
@@ -366,9 +369,22 @@ def reList(dbType):
 def getStockList(dbType):
     return r.get(dbType)
 
-reList(1)
-reList(2)
-reList(3)
+ 
+# 返回redis的列表
+def getStockListAll():
+    response_data_json = {1:'',2:'',3:''}
+    response_data_json[1] = (r.get(1)).decode('utf-8')
+    response_data_json[2] = (r.get(2)).decode('utf-8')
+    response_data_json[3] = (r.get(3)).decode('utf-8') 
+
+    return response_data_json
+
+# print( getStockListAll() )
+
+# reList(1)
+# reList(2)
+# reList(3)
+
 # print( reList(1)  )
 # print( reList(2)  )
 # print( reList(3)  )

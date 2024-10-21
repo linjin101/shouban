@@ -5,6 +5,9 @@ http://sanhu918.com:5555/
 cd C:\Python\project\shouban
 python app.py
 
+# 晚上10点进行采集收盘数据
+python /www/stock/flask/daily.py
+
 ##  启动
 nohup  python /www/stock/flask/app.py > /www/stock/flask/caiji.log 2>&1 &
 nohup  /www/stock/flask/request_time_service.sh > /www/stock/flask/request_time_service.log 2>&1 &
