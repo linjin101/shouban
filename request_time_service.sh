@@ -2,8 +2,8 @@
 
 # 获取当前日期和时间  
 current_date=$(date +"%Y-%m-%d %H:%M:%S")  
-start_time="09:15:00"  
-end_time="15:00:00"  
+start_time="09:25:00"  
+end_time="14:56:59"  
 weekday=$(date +"%u") # 周一到周日，分别对应 1 到 7  
   
 # 将时间转换为从当天午夜开始的秒数  
