@@ -356,11 +356,11 @@ def reList(dbType):
         ztxs = caijithsgl.getStockTopBanRedis(stockInfo[0])
         # 概念
         stockGl = caijithsgl.getStockGlRedis(stockInfo[0])
+        if ztxs == '首板':
+            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#A23735"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
+            print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
+            iColore = iColore + 1
 
-        stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#A23735"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
-        print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
-
-        iColore = iColore +1
         # stock列表存放redis
         setStockList(stockListHtml,dbType)
     return stockListHtml
