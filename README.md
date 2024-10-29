@@ -1,10 +1,6 @@
 # 首板网站
 http://sanhu918.com:5555/
 
-## 运行
-cd C:\Python\project\shouban
-python app.py
-
 # 晚上10点进行采集收盘数据
 python /www/stock/flask/daily.py
 
@@ -21,6 +17,14 @@ killall python
 tail -f /www/stock/flask/caiji.log
 tail -f /www/stock/flask/request_time_service.log
 
+# ################## windows调试 ##################
+cd C:\Python\project\shouban
+# 晚上10点进行采集收盘数据
+python daily.py
+##  Windows启动运行
+python test.py
+python app.py
+# ################################################ 
 
 ### python
 #新版python

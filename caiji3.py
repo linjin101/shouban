@@ -26,6 +26,28 @@ urlsz3 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|6
 # redis配置读取
 r = redis.StrictRedis(host=appconfig.redishost, port=appconfig.redisport,password=appconfig.redispassword, db=appconfig.redisdbnum)
 
+## redis涨停概念删除sadd对应
+
+# redis涨停概念累加
+def stockGLAdd(rstock):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
+
+    # 尝试设置key的值，如果key不存在（NX）  
+    if r.exists('GL:'+rdate):  
+        # 如果key已存在，则累加  
+        # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的  
+        # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差  
+        r.sadd('GL:'+rdate,rstock)
+        ts_code_list = r.sunion('GL:'+rdate)
+        print('涨停概念：')
+        print(ts_code_list)       
+    else:
+        r.sadd('GL:'+rdate,'')
+        # 设置过期时间  
+        r.expire('GL:'+rdate, expire_time_in_seconds)  
+
+
 # redis删除涨停计数
 def stockDel(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
@@ -261,6 +283,8 @@ def szzt( urlsh ,dbType=1):
                     
                     # 涨停累加
                     stockInc(stockCode[4:])
+                    # 涨停概念累加
+                    stockGLAdd(stockCode[4:])
                     stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
                     
@@ -282,6 +306,8 @@ def szzt( urlsh ,dbType=1):
 
                     # 涨停累加
                     stockInc(stockCode[4:])
+                    # 涨停概念累加
+                    stockGLAdd(stockCode[4:])
                     stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
 
