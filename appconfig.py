@@ -23,7 +23,6 @@ if server == 'local':
 
     # redis服务器配置
     redishost = 'localhost'
-    # redishost = '47.122.18.201'
     redisport = 6379
     redispassword = 'shouban33'
     redisdbnum = 0

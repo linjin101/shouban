@@ -18,11 +18,16 @@ tail -f /www/stock/flask/caiji.log
 tail -f /www/stock/flask/request_time_service.log
 
 # ################## windows调试 ##################
+# 调试地址
+http://127.0.0.1:5000
+
 cd C:\Python\project\shouban
 # 晚上10点进行采集收盘数据
 python daily.py
 ##  Windows启动运行
+# 采集数据保存redis
 python test.py
+# 网站flask项目启动
 python app.py
 # ################################################ 
 
