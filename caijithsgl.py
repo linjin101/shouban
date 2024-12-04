@@ -297,7 +297,7 @@ def setStockTopBanList(ts_code,pct_chg,topban_date):
 def getStockTopBanRedis(ts_code):    
     # 尝试设置key的值，如果key不存在就是首板
     if r.exists('zrzt:'+ts_code):
-        return ''
+        return '连板'
     return '首板'
 
 #返回当天所有首板股票代码
