@@ -14,14 +14,16 @@ import redis
 import caijithsgl
 
 # 目标URL  
-# 上证
-urlsh = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|0|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
-urlsh2 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|31|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
-urlsh3 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|61|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
+# 上海
+urlsh = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|0|30|ratio|0.5567433334567789961&crossdomain=1341454252487098&from=xici.compass.cn'
+urlsh2 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|31|30|ratio|0.5567433334567789961&crossdomain=1341454252487098&from=xici.compass.cn'
+urlsh3 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|61|30|ratio|0.5567433334567789961&crossdomain=1341454252487098&from=xici.compass.cn'
+
 # 深证
-urlsz = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|0|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
-urlsz2 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|31|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
-urlsz3 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|61|30|ratio|0.47870068306029916&crossdomain=3728801485178092&from=xici.compass.cn'
+urlsz = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|0|30|ratio|0.5567433334567789961&crossdomain=1341454252487098&from=xici.compass.cn'
+urlsz2 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|31|30|ratio|0.5567433334567789961&crossdomain=1341454252487098&from=xici.compass.cn'
+urlsz3 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|61|30|ratio|0.5567433334567789961&crossdomain=1341454252487098&from=xici.compass.cn'
+
 
 # redis配置读取
 r = redis.StrictRedis(host=appconfig.redishost, port=appconfig.redisport,password=appconfig.redispassword, db=appconfig.redisdbnum)
@@ -40,8 +42,8 @@ def stockGLAdd(rstock):
         # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差  
         r.sadd('GL:'+rdate,rstock)
         ts_code_list = r.sunion('GL:'+rdate)
-        print('涨停概念：')
-        print(ts_code_list)       
+        # print('涨停概念：')
+        # print(ts_code_list)
     else:
         r.sadd('GL:'+rdate,'')
         # 设置过期时间  
@@ -276,8 +278,8 @@ def szzt( urlsh ,dbType=1):
                     # 如果破板4,回封5
                     if getStockHF(stockCode[4:]) == 4 or getStockHF(stockCode[4:]) == 5:
                         stockHF(stockCode[4:],5)
-                        print ( '回封设置:'  )
-                        print(  getStockHF(stockCode[4:]) )
+                        # print ( '回封设置:'  )
+                        # print(  getStockHF(stockCode[4:]) )
                     else:
                         stockHF(stockCode[4:],3)
                     
@@ -296,6 +298,7 @@ def szzt( urlsh ,dbType=1):
             # 创业板显示 and stockCode[4:2] == '30' 
             if dbType == 3:
                 if stockMcj == 0.0 and ( stockCode[4:6] == '30' or stockCode[4:6] == '68' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
+                    # print(stcokName+':'+stockCode[4:]+'\r\n')
                     # 如果破板4,回封5
                     if getStockHF(stockCode[4:]) == 4 or getStockHF(stockCode[4:]) == 5:
                         stockHF(stockCode[4:],5)
@@ -310,7 +313,7 @@ def szzt( urlsh ,dbType=1):
                     stockGLAdd(stockCode[4:])
                     stockZtList.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
                     strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
-
+                    # print(stockZtList)
                     if iLine % 2 == 0:  
                        strRepost += '<br>'      
                     i = i + 1
@@ -336,18 +339,233 @@ def szzt( urlsh ,dbType=1):
     return stockZtList
     # return strRepost
 
-def reList(dbType): 
-    # 上证涨幅排行榜
-    stockListArr1 = szzt( urlsh,dbType )
-    stockListArr11 = szzt( urlsh2,dbType )
-    stockListArr111 = szzt( urlsh3,dbType )
+# 股票涨幅排行榜，首板、N格，回封，神秘里面概念，情绪，老鸭头切片，MA60
+def szztpro( urlsh ):
+    #返回涨停列表
+    stockZtList1 = []
+    stockZtList2 = []
+    stockZtList3 = []
+    stockZtList4 = 0 # 涨幅<8
+    strRepost = ''
+    # 定义请求头  
+    headers = {  
+        'Accept': '*/*',  
+        'Accept-Encoding': 'gzip, deflate',  
+        'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',  
+        'Connection': 'keep-alive',  
+        'Cookie': 'Hm_lvt_08be8f13a5bc5a326158306b8930299f=2723381822; Qs_lvt_8880=2723381821; Qs_pv_8880=577795623916564500',
+        'Host': 'hqdata.compass.cn',
+        'Referer': 'http://xici.compass.cn/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
+        # 注意：这里不应该包含实际的Cookie值，因为它们是用户特定的，  
+        # 并且在这个例子中提供的是无效的或者过期的。  
+        # 如果有必要，你应该在代码中安全地处理Cookie。  
+        # 'Cookie': 'Hm_lvt_08be8f13a5bc5a326158306b8930299f=1723381822; Qs_lvt_8880=1723381822',  
+        # 如果你有有效的Cookie，请在这里添加  
+    }
+    # 发送HTTP GET请求  
+    response = requests.get(urlsh, headers=headers)
+    # 检查请求是否成功  
+    if response.status_code == 200:  
+        # 获取HTML内容  
+        html_content = response.text  
+        # 使用正则表达式查找newSortPreData变量的值  
+        # 注意：这个正则表达式假设newSortPreData被赋值为一个JSON格式的字符串  
+        pattern = r'AJAJ_ON_READYSTATE_CHANGE\(\d+,(.*)\);0'  
+        match = re.search(pattern, html_content, re.DOTALL)  
+        # 获取股票排序列表Html
+        jshtml = match.group(1)
+        # 截取字符串前后字符
+        jsHtmlJson = jshtml[10:-3].replace('\\"', '"').replace('\\\\', '\\').replace('\\', '')  
 
-    # 深证涨幅排行榜
-    stockListArr2 = szzt( urlsz,dbType )
-    stockListArr22 = szzt( urlsz2,dbType )
-    stockListArr222 = szzt( urlsz3,dbType )
+        # 使用正则表达式替换所有的'false'为'False'  
+        fixed_str = re.sub(r'\bfalse\b', 'False', jsHtmlJson)  
+        
+        # 使用eval()解析修正后的字符串（注意：eval()在处理不受信任的输入时是不安全的）  
+        data = eval(fixed_str)  
+        # print(data)
+        # print('-----------------------------------')
+        # 格式化成2016-03-20 11:45:39形式
+        # print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) )
+        # strRepost += '|'+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+        i = 0
+        iLine = 0
+        for item in data[:]:  # 打印前10项  
+            stockMcj = item[9] # 股票卖出价
+            istockZf = item[10] # 股票涨幅数字
+            stockZf = str(item[10])+'%' # 股票涨幅字符串%
+            stockCode = item[0] # 股票代码
+            stcokName =  unquote_plus(item[15]) # 股票中文名
+            # 涨幅<8
+            if item[10] < 8:
+                stockZtList4 = 1
+            
+            if stockCode[4:6] == '30' or stockCode[4:6] == '68':
+                 # 接近涨停价格
+                stcokPriceNum  = 16
+            else:
+                # 接近涨停价格
+                stcokPriceNum  = 8
 
-    stockArr = stockListArr1 + stockListArr11 + stockListArr111 + stockListArr2 + stockListArr22 + stockListArr222
+            # 接近涨停
+            # if stockMcj == 0.0:
+            # print(stockCode,stockZf,stcokPriceNum)
+            if istockZf > stcokPriceNum and stockMcj != 0.0 and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
+                if getStockHF(stockCode[4:]) == 3 or getStockHF(stockCode[4:]) == 5:
+                    stockHF(stockCode[4:],4)
+                    #破板设置4
+                    print ( '破板设置:'  )
+                    print(  getStockHF(stockCode[4:]) )
+
+                elif getStockHF(stockCode[4:]) == 4: #破板价格存储
+                    setStockPb(stockCode[4:],stockMcj)
+
+                # 删除redis计数
+                stockDel(stockCode[4:])
+                # 股票价格列表放到数组
+                stockZtList1.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
+                strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
+                    
+                if iLine % 4 == 0:  
+                    strRepost += '<br>'      
+                i = i + 1
+                iLine = iLine + 1
+
+            # 封板显示
+            if stockMcj == 0.0 and ( stockCode[4:6] == '00' or stockCode[4:6] == '60' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
+                # 如果破板4,回封5
+                if getStockHF(stockCode[4:]) == 4 or getStockHF(stockCode[4:]) == 5:
+                    stockHF(stockCode[4:],5)
+                    # print ( '回封设置:'  )
+                    # print(  getStockHF(stockCode[4:]) )
+                else:
+                    stockHF(stockCode[4:],3)
+                    
+                # 涨停累加
+                stockInc(stockCode[4:])
+                # 涨停概念累加
+                stockGLAdd(stockCode[4:])
+                stockZtList2.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
+                strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
+                    
+                if iLine % 2 == 0:  
+                    strRepost += '<br>'      
+                i = i + 1
+                iLine = iLine + 1
+
+            # 创业板显示 and stockCode[4:2] == '30' 
+            if stockMcj == 0.0 and ( stockCode[4:6] == '30' or stockCode[4:6] == '68' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
+                # print(stcokName+':'+stockCode[4:]+'\r\n')
+                # 如果破板4,回封5
+                if getStockHF(stockCode[4:]) == 4 or getStockHF(stockCode[4:]) == 5:
+                    stockHF(stockCode[4:],5)
+                    # print ( '回封设置:'  )
+                    # print(  getStockHF(stockCode[4:]) )
+                else:
+                    stockHF(stockCode[4:],3)
+
+                # 涨停累加
+                stockInc(stockCode[4:])
+                # 涨停概念累加
+                stockGLAdd(stockCode[4:])
+                stockZtList3.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
+                strRepost +=  str(stockCode[4:])+','+str(stcokName)+','+str(stockZf)+' | \r\n'
+                # print(stockZtList)
+                if iLine % 2 == 0:  
+                    strRepost += '<br>'      
+                i = i + 1
+                iLine = iLine + 1
+        # 整理tushare股票列表
+        # tscodelist2 = tscodelist(stockZtList)
+        # print( tscodelist2 )
+        # zrjg2 = zrjg(tscodelist2,'20240718','20240718')
+        # 昨日涨停筛选排除
+        # zrzt( zrjg2 )
+
+        # print('-----------------------------------\r\n')
+
+        #序号 代码  股票名称 昨收  今开   现价  总量(手) 总额(万) 最高  最低  买入价 卖出价 涨幅↓  量比 换手率
+        #1   688515 裕太微  55.28 54.70 66.34 33533   21008    66.34 54.70 66.34 --    20.01% 3.83 7.33%
+        #["SHHQ688515", 55.28, 54.7, 66.34, 33533, 21008, 66.34, 54.7, 66.34, 0.0, 20.01, 3.83, 7.33, 0.0, false, "%E8%A3%95%E5%A4%AA%E5%BE%AE%20%20", 100.0, 21.06], 
+        # print(jsHtmlJson)
+    else:  
+        print("请求失败，状态码：", response.status_code)
+    # 涨停列表
+    stockZtList = [stockZtList1,stockZtList2,stockZtList3,stockZtList4]
+    # print('################')
+    # print(stockZtList[0])
+    # print(stockZtList[1])
+    # print(stockZtList[2])
+    # print(stockZtList[3])
+    # print('################')
+    return stockZtList
+
+def reStockListAll():
+    stockListHtml1 =''
+    stockListHtml2 = ''
+    stockListHtml3 = ''
+
+    # 上海涨幅排行榜
+    urlsh1 =  'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|'
+    urlsh2 = '|30|ratio|0.5567433334567789961&crossdomain=1341454252487098&from=xici.compass.cn'
+    shlist = reStockList(urlsh1,urlsh2)
+
+    # 深圳涨幅排行榜
+    stockListArrSz2 = []
+    urlsz1 =  'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|'
+    urlsz2 = '|30|ratio|0.5567433334567789961&crossdomain=1341454252487098&from=xici.compass.cn'
+    szlist = reStockList(urlsz1, urlsz2)
+
+    stockListHtml1 = reListpro(shlist[0]+szlist[0])
+    stockListHtml2 = reListpro(shlist[1]+szlist[1])
+    stockListHtml3 = reListpro(shlist[2]+szlist[2])
+
+    # print(stockListHtml1)
+    # print(stockListHtml2)
+    # print(stockListHtml3)
+    # stock列表存放redis
+    setStockList(stockListHtml1,1)
+    setStockList(stockListHtml2,2)
+    setStockList(stockListHtml3,3)
+
+    print('1:'+stockListHtml1)
+    print('2:'+stockListHtml2)
+    print('3:'+stockListHtml3)
+    print('\r\n')
+
+# 61,63涨幅排行榜
+def reStockList(url1,url2):
+    stockListArr = []
+    stockListArrSh1 = []
+    stockListArrSh2 = []
+    stockListArrSh3 = []
+    i = 0
+    while i <= 330:
+        urlsh = url1 + str(i) + url2
+        # print(urlsh)
+        stockListArr = szztpro(urlsh)
+        stockListArrSh1 += stockListArr[0]
+        stockListArrSh2 += stockListArr[1]
+        stockListArrSh3 += stockListArr[2]
+        if stockListArr[3] == 1:
+            # print('涨幅<8')
+            break
+        i += 30
+    return [stockListArrSh1,stockListArrSh2,stockListArrSh3]
+    # print('#################################################')
+    # print(stockListArrSh1+stockListArrSh2+stockListArrSh3)
+
+    # stockListHtml1 += reListpro(stockListArrSh1)
+    # stockListHtml2 += reListpro(stockListArrSh2)
+    # stockListHtml3 += reListpro(stockListArrSh3)
+    #
+    # # stock列表存放redis
+    # setStockList(stockListHtml1,1)
+    # setStockList(stockListHtml2, 2)
+    # setStockList(stockListHtml3, 3)
+
+
+def reListpro(stockArr):
     stockZtListOut = sorted(stockArr, key=lambda x:x[1] )  
     stockListHtml = ''
     iColore = 0
@@ -371,7 +589,7 @@ def reList(dbType):
         elif stockRdHF == 5:
             stockHF = '回封'
             stcokHFColor = '#FF0000' # 红色
-        
+        # print(stockInfo)
         #  破板状态上升
         stockPbzt = ''
         if stockInfo[0] != 0.0 and getStockPb(stockInfo[0]) !=0:
@@ -384,7 +602,62 @@ def reList(dbType):
         stockGl = caijithsgl.getStockGlRedis(stockInfo[0])
         if ztxs == '首板':
             stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#A23735"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
-            print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
+            # print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
+            iColore = iColore + 1
+
+
+    return stockListHtml
+
+def reList(dbType): 
+    # 上海涨幅排行榜
+    stockListArr1 = szzt( urlsh,dbType )
+    stockListArr11 = szzt( urlsh2,dbType )
+    stockListArr111 = szzt( urlsh3,dbType )
+
+    # 深证涨幅排行榜
+    stockListArr2 = szzt( urlsz,dbType )
+    stockListArr22 = szzt( urlsz2,dbType )
+    stockListArr222 = szzt( urlsz3,dbType )
+
+    stockArr = stockListArr1 + stockListArr11 + stockListArr111 + stockListArr2 + stockListArr22 + stockListArr222
+
+    stockZtListOut = sorted(stockArr, key=lambda x:x[1] )  
+    stockListHtml = ''
+    iColore = 0
+    for stockInfo in stockZtListOut[:]:
+        iColorLine = '<font color="#FFFFFF">'
+        if iColore == 0:
+            iColorLine = '<font color="#FF0000">'
+        if iColore == 1:
+            iColorLine = '<font color="#E74F4C">'
+        if iColore == 2:
+            iColorLine = '<font color="#FFD700">'
+ 
+        # 破板和回封
+        stockHF = ''
+        stockRdHF = getStockHF(stockInfo[0])
+        stcokHFColor = '80D34B' # 绿色
+        # print(stockRdHF)
+        if stockRdHF == 4:
+            stockHF = '破'
+            stcokHFColor = '#80D34B' # 绿色
+        elif stockRdHF == 5:
+            stockHF = '回封'
+            stcokHFColor = '#FF0000' # 红色
+        # print(stockInfo)
+        #  破板状态上升
+        stockPbzt = ''
+        if stockInfo[0] != 0.0 and getStockPb(stockInfo[0]) !=0:
+            if float(stockInfo[0]) > float(getStockPb(stockInfo[0])):
+                stockPbzt = '↑↑↑'
+
+        # 首板标识
+        ztxs = caijithsgl.getStockTopBanRedis(stockInfo[0])
+        # 概念
+        stockGl = caijithsgl.getStockGlRedis(stockInfo[0])
+        if ztxs == '首板':
+            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#A23735"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
+            # print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
             iColore = iColore + 1
 
         # stock列表存放redis
