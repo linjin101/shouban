@@ -528,10 +528,10 @@ def reStockListAll():
     setStockList(stockListHtml2,2)
     setStockList(stockListHtml3,3)
 
-    print('1:'+stockListHtml1)
-    print('2:'+stockListHtml2)
-    print('3:'+stockListHtml3)
-    print('\r\n')
+    # print('1:'+stockListHtml1)
+    # print('2:'+stockListHtml2)
+    # print('3:'+stockListHtml3)
+    # print('\r\n')
 
 # 61,63涨幅排行榜
 def reStockList(url1,url2):

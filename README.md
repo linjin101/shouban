@@ -122,3 +122,14 @@ mysql -hlocalhost -uroot -p
 通过以上步骤，你应该能够实现周一到周五的 9:15 到 15:00 每 5 秒钟请求一次时间服务的需求。
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root101';
 ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'root101';
+
+5. **删除MA60之外数据**
+-- 删除M60之外的数据
+DELETE FROM stock_data
+WHERE trade_date NOT IN ( select t.trade_date from  (
+				SELECT trade_date 
+        FROM stock_data 
+        GROUP BY trade_date
+        ORDER BY trade_date DESC
+				limit 0,60
+) as t  )

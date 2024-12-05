@@ -328,7 +328,23 @@ CONCAT(sd.pct_chg,'') as pct_chg
         AND sd.pct_chg > 9  
         order by sd.pct_chg desc
         """
-        results = execute_searchall(connection, query)  
+        # 删除M60之外的数据
+        delquery = f"""
+        
+            DELETE FROM stock_data
+            WHERE trade_date NOT IN ( select t.trade_date from  (
+                            SELECT trade_date 
+                    FROM stock_data 
+                    GROUP BY trade_date
+                    ORDER BY trade_date DESC
+                            limit 0,60
+            ) as t  )
+        """
+
+        results = execute_searchall(connection, query)
+        # 删除MA60之外
+        execute_insert(connection, delquery)
+        print('删除MA60之外')
         # 先删除后添加
         delStockTopBanList()
         if results:  

@@ -37,9 +37,9 @@ while True:
         caiji3.reStockListAll()
         # 为了避免过于频繁的打印，可以添加一个小延时（例如1秒）
         # time.sleep(1)
-    else:
+    # else:
         # 如果不满足条件，可以暂停一小段时间再检查
-        print('不在交易时间')
+        # print('不在交易时间')
         # break
 
 # if appconfig.server == 'aliyun':
