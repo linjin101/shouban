@@ -33,7 +33,7 @@ def is_weekday_and_time_range():
     return False
 
 while True:
-    if True: #is_weekday_and_time_range():
+    if is_weekday_and_time_range():#True:
         caiji3.reStockListAll()
         # 为了避免过于频繁的打印，可以添加一个小延时（例如1秒）
         # time.sleep(1)
