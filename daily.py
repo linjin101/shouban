@@ -94,7 +94,7 @@ for i in range(10):
         print("except!")
 
 # 设置提取今日涨停列表，作为昨日涨停列表存放redis
-print( caijithsgl.setStockTopBanToRedis() )
+print( caijithsgl.setStockTopBanToRedis(0) )
 # 设置股票概念到redis
 caijithsgl.setStockGlRedis()
 

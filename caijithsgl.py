@@ -301,7 +301,7 @@ def getStockTopBanRedis(ts_code):
     return '首板'
 
 #返回当天所有首板股票代码
-def setStockTopBanToRedis():
+def setStockTopBanToRedis(iday):
     connection = connect_to_mysql()  
     if connection:  
         query = f"""
@@ -311,7 +311,7 @@ CONCAT(sd.pct_chg,'') as pct_chg
         JOIN (  
             SELECT trade_date  
             FROM stock_data  
-            WHERE trade_date = CURRENT_DATE()
+            WHERE trade_date = CURRENT_DATE()-{iday}
              ORDER BY trade_date DESC  
             LIMIT 1  
         ) latest_trade ON sd.trade_date = latest_trade.trade_date  

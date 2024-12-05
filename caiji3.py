@@ -601,9 +601,15 @@ def reListpro(stockArr):
         # 概念
         stockGl = caijithsgl.getStockGlRedis(stockInfo[0])
         if ztxs == '首板':
-            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#A23735"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
+            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#FF0000"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
             # print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
             iColore = iColore + 1
+        else:
+            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#006400"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
+            # print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
+            # iColore = iColore + 1
+
+
 
 
     return stockListHtml
