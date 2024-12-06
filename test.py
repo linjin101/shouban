@@ -25,7 +25,7 @@ def is_weekday_and_time_range():
 
         # 定义时间范围
         start_time = datetime.time(9, 20)
-        end_time = datetime.time(15, 0)
+        end_time = datetime.time(15, 5)
 
         # 判断时间是否在范围内
         if start_time <= current_time <= end_time:
