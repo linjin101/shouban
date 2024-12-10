@@ -8,6 +8,9 @@
      #pl {
         display: flex; /* 启用Flexbox布局 */
      }
+     #pl2 {
+        display: flex; /* 启用Flexbox布局 */
+     }
      #riqi {
         font-size: 14px;
         padding: 1px;
@@ -18,7 +21,7 @@
         font-size: 1em;
         /* width: 600px; */
         width: 50%;
-        height: 730px;
+        height: 360px;
         border: 1px solid #000;
         overflow: scroll;
         padding: 1px;
@@ -31,7 +34,7 @@
         font-size: 1em;
         /* width: 600px; */
         width: 50%;
-        height: 730px;
+        height: 360px;
         border: 1px solid #000;
         overflow: scroll;
         padding: 1px;
@@ -44,7 +47,47 @@
         font-size: 1em;
         /* width: 600px; */
         width: 50%;
-        height: 730px;
+        height: 360px;
+        border: 1px solid #000;
+        overflow: scroll;
+        padding: 1px;
+        margin: 1px;
+        background: #000;
+        color: #fff;
+    }
+
+    #terminal4 {
+        font-family: monospace;
+        font-size: 1em;
+        /* width: 600px; */
+        width: 50%;
+        height: 360px;
+        border: 1px solid #000;
+        overflow: scroll;
+        padding: 1px;
+        margin: 1px;
+        background: #000;
+        color: #fff;
+    }
+    #terminal5 {
+        font-family: monospace;
+        font-size: 1em;
+        /* width: 600px; */
+        width: 50%;
+        height: 360px;
+        border: 1px solid #000;
+        overflow: scroll;
+        padding: 1px;
+        margin: 1px;
+        background: #000;
+        color: #fff;
+    }
+    #terminal6 {
+        font-family: monospace;
+        font-size: 1em;
+        /* width: 600px; */
+        width: 50%;
+        height: 360px;
         border: 1px solid #000;
         overflow: scroll;
         padding: 1px;
@@ -119,6 +162,10 @@
                     simulateCommand('terminal',date.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'})+'\r\n<br>'+response[1]);
                     simulateCommand('terminal2', date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) + '\r\n<br>' + response[2]);
                     simulateCommand('terminal3', date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) + '\r\n<br>' + response[3]);
+
+                    simulateCommand('terminal4', date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) + '\r\n<br>' + response[4]);
+                    simulateCommand('terminal5', date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) + '\r\n<br>' + response[5]);
+                    simulateCommand('terminal6', date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) + '\r\n<br>' + response[6]);
                 },
                 error: function(xhr, status, error) {
                     // 请求失败后的回调函数
@@ -148,6 +195,14 @@
 <div id="terminal2"></div>
 
 <div id="terminal3"></div>
+</div>
+
+<div id="pl2">
+<div id="terminal4"></div>
+
+<div id="terminal5"></div>
+
+<div id="terminal6"></div>
 </div>
 
 </body>

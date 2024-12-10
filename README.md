@@ -12,6 +12,7 @@ nohup  python /www/stock/flask/test.py > /www/stock/flask/test.log 2>&1 &
 ## 关闭
 /www/stock/flask/killcaiji.sh
 killall python
+killall python
 # /www/stock/flask/killrequest.sh
 
 ## 日志

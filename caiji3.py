@@ -115,6 +115,46 @@ def stockHF(rstock,rFlag):
         # r.set(rdate+':'+rstock+'HF',rFlag)
     else:  
         r.set(rdate+':'+rstock+'HF',rFlag)
+
+# 回封次数获取
+def getStockHFNum(rstock):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+    rvalue = r.get('HF-'+rdate+':'+rstock)
+    if rvalue is not None:
+        rvalue = int(rvalue.decode('utf-8'))
+        return rvalue
+    return 0
+
+# 回封次数保存
+def setStockHFNum(rstock):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天
+    # 尝试设置key的值，如果key不存在（NX）
+    if r.setnx('HF-'+rdate+':'+rstock, 1):
+        # 设置过期时间
+        r.expire('HF-'+rdate+':'+rstock, expire_time_in_seconds)
+    else:
+        # 如果key已存在，则累加
+        # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的
+        # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差
+        r.incrby('HF-'+rdate+':'+rstock,1)
+
+# redis删除回封计数
+def stockDelHFNum(rstock):
+    rdate = time.strftime( "%Y-%m-%d", time.localtime() )
+    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天
+
+    # 尝试设置key的值，如果key不存在（NX）
+    if r.setnx('HF-'+rdate+':'+rstock, 0):
+        # 设置过期时间
+        r.expire('HF-'+rdate+':'+rstock, expire_time_in_seconds)
+        # r.set(rdate+':'+rstock,0)
+    else:
+        # 如果key已存在，则累加
+        # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的
+        # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差
+        r.set('HF-'+rdate+':'+rstock,0)
+
 # 破板价格保存
 def setStockPb(rstock,sprice):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
@@ -183,10 +223,13 @@ def zrzt(ts_zrjg):
 # 股票涨幅排行榜，首板、N格，回封，神秘里面概念，情绪，老鸭头切片，MA60
 def szztpro( urlsh ):
     #返回涨停列表
-    stockZtList1 = []
-    stockZtList2 = []
-    stockZtList3 = []
-    stockZtList4 = 0 # 涨幅<8
+    stockZtList1 = [] #接近涨停
+    stockZtList2 = [] #10cm首板回封
+    stockZtList3 = [] #20cm首板回封
+    stockZtList4 = 0 # 涨幅<8用户采集循环截止标记
+    stockZtList5 = []  # 连板
+    stockZtList6 = []  # 10cm首板
+    stockZtList7 = []  # 20cm首板
     strRepost = ''
     # 定义请求头  
     headers = {  
@@ -248,6 +291,8 @@ def szztpro( urlsh ):
                 # 接近涨停价格
                 stcokPriceNum  = 8
 
+            # 首板标识
+            ztxs = caijithsgl.getStockTopBanRedis(stockCode[4:])
             # 接近涨停
             # if stockMcj == 0.0:
             # print(stockCode,stockZf,stcokPriceNum)
@@ -257,7 +302,6 @@ def szztpro( urlsh ):
                     #破板设置4
                     # print ( '破板设置:'  )
                     # print(  getStockHF(stockCode[4:]) )
-
                 elif getStockHF(stockCode[4:]) == 4: #破板价格存储
                     setStockPb(stockCode[4:],stockMcj)
 
@@ -265,16 +309,19 @@ def szztpro( urlsh ):
                 stockDel(stockCode[4:])
                 # 破板累加
                 stockInc(stockCode[4:]+'PB')
-                # 首板标识
-                ztxs = caijithsgl.getStockTopBanRedis(stockCode[4:])
+
                 if ztxs == '首板':
                     # 股票价格列表放到数组
                     stockZtList1.append( [ stockCode[4:],getStockInc(stockCode[4:]+'PB'),stcokName,stockZf,stockMcj] )
-
+                    # print([ stockCode[4:],getStockInc(stockCode[4:]+'PB'),stcokName,stockZf,stockMcj])
                 i = i + 1
 
             # 封板显示
             if stockMcj == 0.0 and ( stockCode[4:6] == '00' or stockCode[4:6] == '60' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
+                # 回封次数累加
+                # 如果回封5
+                if getStockHF(stockCode[4:]) == 4:
+                    setStockHFNum(stockCode[4:])
                 # 如果破板4,回封5
                 if getStockHF(stockCode[4:]) == 4 or getStockHF(stockCode[4:]) == 5:
                     stockHF(stockCode[4:],5)
@@ -289,13 +336,20 @@ def szztpro( urlsh ):
                 stockDel(stockCode[4:]+'PB')
                 # 涨停概念累加
                 stockGLAdd(stockCode[4:])
-                stockZtList2.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
-
+                if ztxs == '首板' and getStockHF(stockCode[4:]) == 5: # 首板回封
+                    stockZtList2.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
+                elif ztxs == '首板' and getStockHF(stockCode[4:]) == 3:
+                    stockZtList6.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
+                else:
+                    stockZtList5.append([stockCode[4:], getStockInc(stockCode[4:]), stcokName, stockZf, stockMcj])
                 i = i + 1
 
             # 创业板显示 and stockCode[4:2] == '30' 
             if stockMcj == 0.0 and ( stockCode[4:6] == '30' or stockCode[4:6] == '68' ) and stcokName[0:2] != 'ST' and stcokName[0:3] != '*ST'  and stcokName[0:1] != 'C'   and stcokName[0:1] != 'N':
-                # print(stcokName+':'+stockCode[4:]+'\r\n')
+                # 回封次数累加
+                # 如果回封5
+                if getStockHF(stockCode[4:]) == 4:
+                    setStockHFNum(stockCode[4:])
                 # 如果破板4,回封5
                 if getStockHF(stockCode[4:]) == 4 or getStockHF(stockCode[4:]) == 5:
                     stockHF(stockCode[4:],5)
@@ -310,13 +364,18 @@ def szztpro( urlsh ):
                 stockDel(stockCode[4:] + 'PB')
                 # 涨停概念累加
                 stockGLAdd(stockCode[4:])
-                stockZtList3.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
+                if ztxs == '首板' and getStockHF(stockCode[4:]) == 5: # 首板回封
+                    stockZtList3.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
+                elif ztxs == '首板' and getStockHF(stockCode[4:]) == 3:
+                    stockZtList7.append( [ stockCode[4:],getStockInc(stockCode[4:]),stcokName,stockZf,stockMcj] )
+                else:
+                    stockZtList5.append([stockCode[4:], getStockInc(stockCode[4:]), stcokName, stockZf, stockMcj])
 
                 i = i + 1
     else:  
         print("请求失败，状态码：", response.status_code)
     # 涨停列表
-    stockZtList = [stockZtList1,stockZtList2,stockZtList3,stockZtList4]
+    stockZtList = [stockZtList1,stockZtList2,stockZtList3,stockZtList4,stockZtList5,stockZtList6,stockZtList7]
     # print('################')
     # print(stockZtList[0])
     # print(stockZtList[1])
@@ -329,6 +388,9 @@ def reStockListAll():
     stockListHtml1 =''
     stockListHtml2 = ''
     stockListHtml3 = ''
+    stockListHtml4 = ''
+    stockListHtml5 = ''
+    stockListHtml6 = ''
 
     # 上海涨幅排行榜
     urlsh1 =  'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sh|A|desc|'
@@ -345,6 +407,11 @@ def reStockListAll():
     stockListHtml2 = reListpro(shlist[1]+szlist[1])
     stockListHtml3 = reListpro(shlist[2]+szlist[2])
 
+    stockListHtml4 = reListpro(shlist[3] + szlist[3])
+
+    stockListHtml5 = reListpro(shlist[4] + szlist[4])
+    stockListHtml6 = reListpro(shlist[5] + szlist[5])
+
     # print(stockListHtml1)
     # print(stockListHtml2)
     # print(stockListHtml3)
@@ -352,6 +419,10 @@ def reStockListAll():
     setStockList(stockListHtml1,1)
     setStockList(stockListHtml2,2)
     setStockList(stockListHtml3,3)
+
+    setStockList(stockListHtml4, 4)
+    setStockList(stockListHtml5, 5)
+    setStockList(stockListHtml6, 6)
 
     # print('1:'+stockListHtml1)
     # print('2:'+stockListHtml2)
@@ -364,6 +435,9 @@ def reStockList(url1,url2):
     stockListArrSh1 = []
     stockListArrSh2 = []
     stockListArrSh3 = []
+    stockListArrSh4 = []
+    stockListArrSh5 = []
+    stockListArrSh6 = []
     i = 0
     while i <= 330:
         urlsh = url1 + str(i) + url2
@@ -372,11 +446,16 @@ def reStockList(url1,url2):
         stockListArrSh1 += stockListArr[0]
         stockListArrSh2 += stockListArr[1]
         stockListArrSh3 += stockListArr[2]
+
+        stockListArrSh4 += stockListArr[4]
+        stockListArrSh5 += stockListArr[5]
+        stockListArrSh6 += stockListArr[6]
+
         if stockListArr[3] == 1:
             # print('涨幅<8')
             break
         i += 30
-    return [stockListArrSh1,stockListArrSh2,stockListArrSh3]
+    return [stockListArrSh1,stockListArrSh2,stockListArrSh3,stockListArrSh4,stockListArrSh5,stockListArrSh6]
     # print('#################################################')
     # print(stockListArrSh1+stockListArrSh2+stockListArrSh3)
 
@@ -405,6 +484,8 @@ def reListpro(stockArr):
  
         # 破板和回封
         stockHF = ''
+        # 回封次数
+        stockHFNum = ''
         stockRdHF = getStockHF(stockInfo[0])
         stcokHFColor = '80D34B' # 绿色
         # print(stockRdHF)
@@ -414,23 +495,29 @@ def reListpro(stockArr):
         elif stockRdHF == 5:
             stockHF = '回封'
             stcokHFColor = '#FF0000' # 红色
+            # 回封次数获取
+            if str(getStockHFNum(stockInfo[0])) != '0':
+                stockHFNum = str(getStockHFNum(stockInfo[0]))
+
         # print(stockInfo)
         #  破板状态上升
         stockPbzt = ''
         if stockInfo[0] != 0.0 and getStockPb(stockInfo[0]) !=0:
             if float(stockInfo[0]) > float(getStockPb(stockInfo[0])):
-                stockPbzt = '↑↑↑'
+                stockPbzt = '↑'
+            else:
+                stockPbzt = '↓'
 
         # 首板标识
         ztxs = caijithsgl.getStockTopBanRedis(stockInfo[0])
         # 概念
         stockGl = caijithsgl.getStockGlRedis(stockInfo[0])
         if ztxs == '首板':
-            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#FF0000"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
+            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#FF0000"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+'</b></font> <font color="FF00FF">'+stockHFNum+'</font> '+stockPbzt+stockGl+' <br>'
             # print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
             iColore = iColore + 1
         else:
-            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#006400"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+stockPbzt+'</b></font> '+stockGl+'<br>'
+            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#006400"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+'</b></font> <font color="FF00FF">'+stockHFNum+'</font> '+stockPbzt+stockGl+' <br>'
             # print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
             # iColore = iColore + 1
 
@@ -446,11 +533,14 @@ def getStockList(dbType):
  
 # 返回redis的列表
 def getStockListAll():
-    response_data_json = {1:'',2:'',3:''}
+    response_data_json = {1:'',2:'',3:'',4:'',5:'',6:''}
     response_data_json[1] = (r.get(1)).decode('utf-8')
     response_data_json[2] = (r.get(2)).decode('utf-8')
-    response_data_json[3] = (r.get(3)).decode('utf-8') 
+    response_data_json[3] = (r.get(3)).decode('utf-8')
 
+    response_data_json[4] = (r.get(4)).decode('utf-8')
+    response_data_json[5] = (r.get(5)).decode('utf-8')
+    response_data_json[6] = (r.get(6)).decode('utf-8')
     return response_data_json
 
 # print( getStockListAll() )

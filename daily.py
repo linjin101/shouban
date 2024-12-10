@@ -93,10 +93,14 @@ for i in range(10):
     except:
         print("except!")
 
-# 设置提取今日涨停列表，作为昨日涨停列表存放redis
-print( caijithsgl.setStockTopBanToRedis(0) )
-# 设置股票概念到redis
-caijithsgl.setStockGlRedis()
+# 检查今天是否是周六（weekday() 返回 5）或周日（weekday() 返回 6）
+if today.weekday() <= 5:
+    print(today.weekday())
+    # 设置提取今日涨停列表，作为昨日涨停列表存放redis
+    print(caijithsgl.setStockTopBanToRedis(0))
+
+    # 设置股票概念到redis
+    caijithsgl.setStockGlRedis()
 
 # SELECT st.trade_date ,count(1)
 # FROM `stock_data` st

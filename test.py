@@ -24,8 +24,8 @@ def is_weekday_and_time_range():
         current_time = now.time()
 
         # 定义时间范围
-        start_time = datetime.time(9, 20)
-        end_time = datetime.time(15, 5)
+        start_time = datetime.time(9, 20,0)
+        end_time = datetime.time(14, 56,53)
 
         # 判断时间是否在范围内
         if start_time <= current_time <= end_time:
@@ -34,6 +34,7 @@ def is_weekday_and_time_range():
 
 while True:
     if is_weekday_and_time_range():#True:
+    # if True:
         caiji3.reStockListAll()
         # 为了避免过于频繁的打印，可以添加一个小延时（例如1秒）
         # time.sleep(1)
