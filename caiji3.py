@@ -507,17 +507,18 @@ def reListpro(stockArr):
                 stockPbzt = '↑'
             else:
                 stockPbzt = '↓'
-
+        # k线
+        kx = ' <a target="_blank" style="color: #ff0000;" href="https://quote.eastmoney.com/kcb/'+stockInfo[0]+'.html#fullScreenChart">k线</a>'
         # 首板标识
         ztxs = caijithsgl.getStockTopBanRedis(stockInfo[0])
         # 概念
         stockGl = caijithsgl.getStockGlRedis(stockInfo[0])
         if ztxs == '首板':
-            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#FF0000"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+'</b></font> <font color="FF00FF">'+stockHFNum+'</font> '+stockPbzt+stockGl+' <br>'
+            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#FF0000"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+'</b></font> <font color="FF00FF">'+stockHFNum+'</font> '+stockPbzt+stockGl+kx+' <br>'
             # print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
             iColore = iColore + 1
         else:
-            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#006400"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+'</b></font> <font color="FF00FF">'+stockHFNum+'</font> '+stockPbzt+stockGl+' <br>'
+            stockListHtml += iColorLine + '<b>'+str(stockInfo[0])+'</b>'+','+str(stockInfo[1])+','+str(stockInfo[2])+','+str(stockInfo[3])+ '</font> <font color="#006400"><b> '+ztxs+' </b></font>'+'<font color="'+stcokHFColor+'"><b> '+stockHF+'</b></font> <font color="FF00FF">'+stockHFNum+'</font> '+stockPbzt+stockGl+kx+' <br>'
             # print(str(stockInfo[0])+':'+ztxs+'=>'+stockGl)
             # iColore = iColore + 1
 

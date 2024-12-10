@@ -134,3 +134,5 @@ WHERE trade_date NOT IN ( select t.trade_date from  (
         ORDER BY trade_date DESC
 				limit 0,60
 ) as t  )
+
+https://quote.eastmoney.com/kcb/688716.html#fullScreenChart
