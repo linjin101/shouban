@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hover Link Popup Example</title>
+    <style>
+        /* 隐藏弹框的初始样式 */
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1340px;
+            height: 800px;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        #popup iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 添加关闭按钮的样式 */
+        #closeButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #closeButton:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <a href="https://quote.eastmoney.com/sz000727.html#fullScreenChart" class="hover-link" id="sz000727">sz000727</a><br>
+    <a href="https://quote.eastmoney.com/sz000728.html#fullScreenChart" class="hover-link" id="sz000728">sz000728</a><br>
+    <a href="https://quote.eastmoney.com/sz000729.html#fullScreenChart" class="hover-link" id="sz000729">sz000729</a><br>
+    <div id="popup">
+        <button id="closeButton">Close</button>
+        <iframe id="popupIframe" src="about:blank"></iframe>
+    </div>
+
+    <script>
+        // 获取所有具有hover-link类的链接
+        const links = document.querySelectorAll('.hover-link');
+        const popup = document.getElementById('popup');
+        const popupIframe = document.getElementById('popupIframe');
+        const closeButton = document.getElementById('closeButton');
+
+        // 为每个链接添加mouseenter事件监听器
+        links.forEach(link => {
+            link.addEventListener('mouseenter', (event) => {
+                // 更新iframe的src为当前链接的href
+                popupIframe.src = event.target.href;
+                // 显示弹框
+                popup.style.display = 'block';
+            });
+        });
+
+        // 添加关闭按钮的点击事件监听器
+        closeButton.addEventListener('click', () => {
+            // 重置iframe的src为about:blank（出于安全和隐私考虑）
+            popupIframe.src = 'about:blank';
+            // 隐藏弹框
+            popup.style.display = 'none';
+        });
+
+        // 可选：添加文档点击事件监听器以允许用户点击弹框外部来关闭弹框
+        // 但这里我们排除了链接和弹框内的元素
+        document.addEventListener('click', (event) => {
+            if (!popup.contains(event.target) && !links.includes(event.target)) {
+                popupIframe.src = 'about:blank'; // 出于安全和隐私考虑，重置iframe的src
+                popup.style.display = 'none';
+            }
+        });
+
+        // 注意：由于我们要求鼠标离开链接时弹框保持显示，
+        // 所以我们不需要为链接添加mouseleave事件监听器来隐藏弹框。
+    </script>
+</body>
+</html>

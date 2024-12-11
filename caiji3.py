@@ -507,8 +507,12 @@ def reListpro(stockArr):
                 stockPbzt = '↑'
             else:
                 stockPbzt = '↓'
-        # k线
-        kx = ' <a target="_blank" style="color: #ff0000;" href="https://quote.eastmoney.com/kcb/'+stockInfo[0]+'.html#fullScreenChart">k线</a>'
+        # k线 深圳的添加sz
+        stockCode = stockInfo[0]
+        if stockCode[0:2] == '30' or stockCode[0:2] == '00' :
+            kx = ' <a id="'+stockCode+'" target="_blank" style="color: #ff0000;" href="https://quote.eastmoney.com/sz'+stockCode+'.html#fullScreenChart">k线</a>'
+        else:
+            kx = ' <a id="'+stockCode+'" target="_blank" style="color: #ff0000;" href="https://quote.eastmoney.com/kcb/'+stockCode+'.html#fullScreenChart">k线</a>'
         # 首板标识
         ztxs = caijithsgl.getStockTopBanRedis(stockInfo[0])
         # 概念

@@ -35,6 +35,12 @@ def index():
      
     return render_template('index.html',userconfig=userconfig,days_to_futures=days_to_futures,days_to_options=days_to_options)
 
+
+@app.route('/pop')
+def pop():
+    return render_template('pop.html')
+
+
 # @app.route('/process_input', methods=['POST'])
 # def process_input():
 #     input_text = request.form['input_text']
