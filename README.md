@@ -136,3 +136,10 @@ WHERE trade_date NOT IN ( select t.trade_date from  (
 ) as t  )
 
 https://quote.eastmoney.com/kcb/688716.html#fullScreenChart
+
+# 批量删除Redis命令
+/usr/bin/redis-cli -h 127.0.0.1 -p 6379 -a shouban33 --scan --pattern '2025-03*' | xargs -L1 redis-cli -a shouban33 DEL
+
+# Redis 密码
+AUTH shouban33
+
