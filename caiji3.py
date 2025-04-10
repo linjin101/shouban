@@ -38,6 +38,8 @@ def stockGLAdd(rstock):
         # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的  
         # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差  
         r.sadd('GL:'+rdate,rstock)
+        # 增加过期时间10天设置
+        r.expire('GL:' + rdate, expire_time_in_seconds)
         ts_code_list = r.sunion('GL:'+rdate)
         # print('涨停概念：')
         # print(ts_code_list)
@@ -62,6 +64,8 @@ def stockDel(rstock):
         # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的  
         # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差  
         r.set(rdate+':'+rstock,0)
+        # 增加过期时间10天设置
+        r.expire(rdate+':'+rstock, expire_time_in_seconds)
 
 def setStockList(stockList,listFlag):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
@@ -85,6 +89,7 @@ def stockInc(rstock):
         # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的  
         # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差  
         r.incrby(rdate+':'+rstock,1)
+        r.expire(rdate + ':' + rstock, expire_time_in_seconds)
 
 # 获取redis累加值 
 def getStockInc(rstock):
@@ -115,8 +120,9 @@ def stockHF(rstock,rFlag):
         # r.set(rdate+':'+rstock+'HF',rFlag)
     else:  
         r.set(rdate+':'+rstock+'HF',rFlag)
+        r.expire(rdate + ':' + rstock + 'HF', expire_time_in_seconds)
 
-# 回封次数获取
+    # 回封次数获取
 def getStockHFNum(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
     rvalue = r.get('HF-'+rdate+':'+rstock)
@@ -138,6 +144,7 @@ def setStockHFNum(rstock):
         # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的
         # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差
         r.incrby('HF-'+rdate+':'+rstock,1)
+        r.expire('HF-' + rdate + ':' + rstock, expire_time_in_seconds)
 
 # redis删除回封计数
 def stockDelHFNum(rstock):
@@ -154,6 +161,7 @@ def stockDelHFNum(rstock):
         # 注意：这里并没有再次检查key的过期时间，因为设置过期时间和累加操作是分开的
         # 在实际应用中，你可能需要设计一种机制来定期更新过期时间，或者接受一定的过期时间误差
         r.set('HF-'+rdate+':'+rstock,0)
+        r.expire('HF-' + rdate + ':' + rstock, expire_time_in_seconds)
 
 # 破板价格保存
 def setStockPb(rstock,sprice):
@@ -167,8 +175,9 @@ def setStockPb(rstock,sprice):
         # r.set('PB-'+rdate+':'+rstock,sprice)
     else:  
         r.set('PB-'+rdate+':'+rstock,sprice)
+        r.expire('PB-' + rdate + ':' + rstock, expire_time_in_seconds)
 
-# 获取破板当前价格
+    # 获取破板当前价格
 def getStockPb(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
     sprice = r.get('PB-'+rdate+':'+rstock)
