@@ -277,7 +277,7 @@ def setStockGlRedis():
                 rdate = time.strftime( "%Y-%m-%d", time.localtime() )
                 expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
                 r.set('stockGL:'+ts_code,stockGL)
-                r.expire('', expire_time_in_seconds) 
+                # r.expire('', expire_time_in_seconds)
         connection.close()
 # 删除昨日涨停列表到redis
 def delStockTopBanList():
@@ -291,7 +291,7 @@ def setStockTopBanList(ts_code,pct_chg,topban_date):
     expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
 
     r.set('zrzt:'+ts_code,topban_date+':'+pct_chg)
-    r.expire('', expire_time_in_seconds) 
+    # r.expire('zrzt:'+ts_code, expire_time_in_seconds)
 
 # 判断昨日涨停
 def getStockTopBanRedis(ts_code):    
