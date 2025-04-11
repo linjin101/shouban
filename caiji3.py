@@ -24,13 +24,13 @@ urlsz3 = 'https://hqdata.compass.cn/test/sort2.py/sortList.znzDo?cmd=sz|A|desc|6
 
 # redis配置读取
 r = redis.StrictRedis(host=appconfig.redishost, port=appconfig.redisport,password=appconfig.redispassword, db=appconfig.redisdbnum)
-
+expire_time_in_seconds = 24 * 60 * 60 * 3  # 24小时 * 3天   
 ## redis涨停概念删除sadd对应
 
 # redis涨停概念累加
 def stockGLAdd(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
+    # expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
 
     # 尝试设置key的值，如果key不存在（NX）  
     if r.exists('GL:'+rdate):  
@@ -52,7 +52,7 @@ def stockGLAdd(rstock):
 # redis删除涨停计数
 def stockDel(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天 
+    # expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天 
 
     # 尝试设置key的值，如果key不存在（NX）  
     if r.setnx(rdate+':'+rstock, 0):  
@@ -69,7 +69,7 @@ def stockDel(rstock):
 
 def setStockList(stockList,listFlag):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
+    # expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
 
     r.set(listFlag,stockList)
     r.expire(listFlag, expire_time_in_seconds) 
@@ -77,7 +77,7 @@ def setStockList(stockList,listFlag):
 # redis累加
 def stockInc(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
+    # expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
 
     # 尝试设置key的值，如果key不存在（NX）  
     if r.setnx(rdate+':'+rstock, 1):  
@@ -111,7 +111,7 @@ def getStockHF(rstock):
 # redi回封,涨停3，破板4，回封5
 def stockHF(rstock,rFlag):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天  
+    # expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天  
 
     # 尝试设置key的值，如果key不存在（NX）  
     if r.setnx(rdate+':'+rstock+'HF', rFlag):  
@@ -134,7 +134,7 @@ def getStockHFNum(rstock):
 # 回封次数保存
 def setStockHFNum(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天
+    # expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天
     # 尝试设置key的值，如果key不存在（NX）
     if r.setnx('HF-'+rdate+':'+rstock, 1):
         # 设置过期时间
@@ -149,7 +149,7 @@ def setStockHFNum(rstock):
 # redis删除回封计数
 def stockDelHFNum(rstock):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天
+    # expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天
 
     # 尝试设置key的值，如果key不存在（NX）
     if r.setnx('HF-'+rdate+':'+rstock, 0):
@@ -166,7 +166,7 @@ def stockDelHFNum(rstock):
 # 破板价格保存
 def setStockPb(rstock,sprice):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天  
+    # expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天  
 
     # 尝试设置key的值，如果key不存在（NX）  
     if r.setnx('PB-'+rdate+':'+rstock, sprice):  
