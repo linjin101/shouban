@@ -81,8 +81,8 @@ def stockListPrice(yesterday):
 # 获取当前日期
 today = datetime.now()
 i=0
-# 采集range(1)几天前的数据,设置10天可以跨过所有假期
-for i in range(10):  
+# 采集range(1)几天前的数据,设置5天可以跨过所有假期
+for i in range(5):
     # 计算昨天的日期和时间  
     yesterday = today - timedelta(days=i) 
     # 这里写你想要在循环中执行的代码  
@@ -94,7 +94,8 @@ for i in range(10):
         print("except!")
 
 # 检查今天是否是周六（weekday() 返回 5）或周日（weekday() 返回 6）
-if today.weekday() <= 5:
+if today.weekday() <= 4:
+    print("星期")
     print(today.weekday())
     # 设置提取今日涨停列表，作为昨日涨停列表存放redis
     print(caijithsgl.setStockTopBanToRedis(0))

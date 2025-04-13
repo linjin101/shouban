@@ -5,11 +5,13 @@ import requests
 from bs4 import BeautifulSoup
 import mysql.connector  
 from mysql.connector import Error
+from datetime import datetime, timedelta
 
-
+# 获取当前日期
+today = datetime.now()
 # redis配置读取
 r = redis.StrictRedis(host=appconfig.redishost, port=appconfig.redisport,password=appconfig.redispassword, db=appconfig.redisdbnum)
-
+expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天
 
 def hy_str(s):
     # s = "计算机 -- IT服务Ⅱ -- IT服务Ⅲ （共117家）"  
@@ -288,10 +290,9 @@ def delStockTopBanList():
 # 设置昨日涨停列表到redis
 def setStockTopBanList(ts_code,pct_chg,topban_date):
     rdate = time.strftime( "%Y-%m-%d", time.localtime() )
-    expire_time_in_seconds = 24 * 60 * 60 * 10  # 24小时 * 10天   
 
     r.set('zrzt:'+ts_code,topban_date+':'+pct_chg)
-    # r.expire('zrzt:'+ts_code, expire_time_in_seconds)
+    r.expire('zrzt:'+ts_code, expire_time_in_seconds)
 
 # 判断昨日涨停
 def getStockTopBanRedis(ts_code):    
@@ -345,7 +346,7 @@ CONCAT(sd.pct_chg,'') as pct_chg
         # 删除MA60之外
         execute_insert(connection, delquery)
         print('删除MA60之外')
-        # 先删除后添加
+        # zrzt先删除后添加
         delStockTopBanList()
         if results:  
             for row in results: 
