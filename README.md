@@ -135,6 +135,8 @@ WHERE trade_date NOT IN ( select t.trade_date from  (
 				limit 0,60
 ) as t  )
 
+# 行情数据
+http://xici.compass.cn/stock/newsort.php?market=sh&type=A&sort=ratio&order=desc&cls=2
 https://quote.eastmoney.com/kcb/688716.html#fullScreenChart
 
 # 批量删除Redis命令
