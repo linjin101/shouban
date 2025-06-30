@@ -1,38 +1,38 @@
 # 首板网站
 http://sanhu918.com:5555/
 
-# 晚上10点进行采集收盘数据
+### 晚上10点进行采集收盘数据
 python /www/stock/flask/daily.py
 
-##  启动
+###  启动
 nohup  python /www/stock/flask/app.py > /www/stock/flask/caiji.log 2>&1 &
 nohup  python /www/stock/flask/test.py > /www/stock/flask/test.log 2>&1 &
-# nohup  /www/stock/flask/request_time_service.sh > /www/stock/flask/request_time_service.log 2>&1 &
 
-## 关闭
+
+### 关闭
 /www/stock/flask/killcaiji.sh
 killall python
 killall python
-# /www/stock/flask/killrequest.sh
 
-## 日志
+
+### 日志
 tail -f /www/stock/flask/caiji.log
 tail -f /www/stock/flask/test.log
-# tail -f /www/stock/flask/request_time_service.log
 
-# ################## windows调试 ##################
-# 调试地址
+
+## windows调试
+### 调试地址
 http://127.0.0.1:5000
 
 cd C:\Python\project\shouban
-# 晚上10点进行采集收盘数据
+### 晚上10点进行采集收盘数据
 python daily.py
-##  Windows启动运行
-# 采集数据保存redis
+###  Windows启动运行
+### 采集数据保存redis
 python test.py
-# 网站flask项目启动
+### 网站flask项目启动
 python app.py
-# ################################################ 
+
 
 ### python
 #新版python
@@ -57,7 +57,7 @@ pip install mysql-connector-python
 
 
 
-## 定时
+### 定时
 
 在 CentOS 系统上，你可以使用 `cron` 和 `while` 循环结合 `sleep` 命令来实现每 5 秒钟执行一次某个任务的需求。不过需要注意的是，`cron` 本身的最小时间间隔是 1 分钟。为了实现更短的时间间隔，我们可以利用 `cron` 来启动一个脚本，然后在脚本中使用 `while` 循环和 `sleep` 命令来实现每 5 秒执行一次。
 
@@ -135,13 +135,13 @@ WHERE trade_date NOT IN ( select t.trade_date from  (
 				limit 0,60
 ) as t  )
 
-# 行情数据
+###行情数据
 http://xici.compass.cn/stock/newsort.php?market=sh&type=A&sort=ratio&order=desc&cls=2
 https://quote.eastmoney.com/kcb/688716.html#fullScreenChart
 
-# 批量删除Redis命令
+### 批量删除Redis命令
 /usr/bin/redis-cli -h 127.0.0.1 -p 6379 -a shouban33 --scan --pattern '2025-03*' | xargs -L1 redis-cli -a shouban33 DEL
 
-# Redis 密码
+### Redis 密码
 AUTH shouban33
 
