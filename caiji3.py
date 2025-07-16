@@ -289,16 +289,16 @@ def szztpro( urlsh ):
             stockZf = str(item[10])+'%' # 股票涨幅字符串%
             stockCode = item[0] # 股票代码
             stcokName =  unquote_plus(item[15]) # 股票中文名
-            # 涨幅<8
-            if item[10] < 8:
+            # 涨幅<7
+            if item[10] < 7:
                 stockZtList4 = 1
             
             if stockCode[4:6] == '30' or stockCode[4:6] == '68':
                  # 接近涨停价格
-                stcokPriceNum  = 16
+                stcokPriceNum  = 14
             else:
                 # 接近涨停价格
-                stcokPriceNum  = 8
+                stcokPriceNum  = 7
 
             # 首板标识
             ztxs = caijithsgl.getStockTopBanRedis(stockCode[4:])
