@@ -198,7 +198,13 @@ def fetch_concept_caiji():
         # SELECT left(sd.ts_code, 6) as ts_code, sd.trade_date  
         # FROM `stock_data` sd  
         # WHERE sd.trade_date = (SELECT MAX(sd2.trade_date) FROM `stock_data` sd2)  
-        # """  
+        # """
+
+        del_concept_sql = f"""
+        TRUNCATE `stock_concepts`
+        """
+        # 先删除再重新添加概念
+        execute_insert(connection, del_concept_sql)
 
         query = f"""
         select * from (
