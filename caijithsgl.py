@@ -217,8 +217,9 @@ def fetch_concept_caiji():
 
         results = execute_query(connection, query)  
         print(results)
-          
-        if results:  
+
+        if results:
+            cursor = connection.cursor()
             for row in results: 
                 # 假设我们只处理第一个结果（如果有多个结果，可以循环处理）  
                 # ts_code, trade_date = results[0]  
@@ -229,19 +230,24 @@ def fetch_concept_caiji():
 
                 # 插入到stock_concepts表  
                 insert_query = """  
-                INSERT INTO `stock_concepts` (`ts_code`, `trade_date`, `concepts`)  
-                VALUES (%s, %s,  %s)  
-                """  
-                
-                val = (ts_code, trade_date,concepts)  
-                print(insert_query)
-                print(val)
-                execute_insert(connection, insert_query, val)  
-                print(f"成功插入 {ts_code} 到 stock_concepts 表，trade_date: {trade_date},concepts:{concepts}")  
-            else:  
-                print("没有找到结果")  
-  
-        connection.close()  
+                                INSERT INTO `stock_concepts` (`ts_code`, `trade_date`, `concepts`)  
+                                VALUES (%s, %s,  %s);
+                                """
+
+                val = (ts_code, trade_date,concepts)
+                cursor.execute(insert_query, val)
+                # print(insert_query)
+                # print(val)
+                print(f"stock:{ts_code}, trade_date:{trade_date},concepts:{concepts}")
+                # execute_insert(connection, insert_query, val)
+                # print(f"成功插入 {ts_code} 到 stock_concepts 表，trade_date: {trade_date},concepts:{concepts}")
+            connection.commit()
+            if connection.is_connected():
+                cursor.close()
+        else:
+                print("没有找到结果")
+
+        connection.close()
 
 def getStockGl(ts_code):
     stockGL = ''

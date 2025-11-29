@@ -98,8 +98,8 @@ if today.weekday() <= 5:
     print(today.weekday())
     # 设置提取今日涨停列表，作为昨日涨停列表存放redis
     print(caijithsgl.setStockTopBanToRedis(0))
-    # 概念采集
-    caijithsgl.fetch_concept_caiji()
+    # 概念采集  阿里云服务器太差，只能本地执行，然后数据同步到服务器
+    # caijithsgl.fetch_concept_caiji()
     # 设置股票概念到redis
     caijithsgl.setStockGlRedis()
 
